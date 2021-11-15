@@ -22,7 +22,7 @@ if git log --pretty="format:%G?" "origin/$BUILDKITE_PIPELINE_DEFAULT_BRANCH..$BU
   while : ; do
     git fetch --all
     git reset --hard origin/"$BUILDKITE_BRANCH"
-    if ! git rebase --exec 'git commit --amend -n --gpg-sign="tezos-packaging@serokell.io"' \
+    if ! git rebase --exec 'git commit --amend -n --gpg-sign="tezos-packaging@serokell.io" --no-edit' \
       "origin/$BUILDKITE_PIPELINE_DEFAULT_BRANCH"; then
       git rebase --abort
       exit 1
