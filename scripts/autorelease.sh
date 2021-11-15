@@ -37,7 +37,7 @@ done
 msg_regex="Merge pull request .* from serokell\/auto\/(v.*)-release"
 rc_regex="^v[0-9]+\.[0-9]+-rc[0-9]+"
 
-# We create a pre-release in any case but if we are merging a stable version release PR
+# We create a pre-release in any case except if we are merging a stable version release PR
 mode_flag="--prerelease"
 
 if [[ ${1-""} =~ $msg_regex ]]; then
@@ -54,11 +54,11 @@ fi
 
 # Update the tag
 git fetch # So that the script can be run from an arbitrary checkout
-git tag -f $tag
+git tag -f "$tag"
 git push --force --tags
 
 # Create release
-gh release create -F "$TEMPDIR"/"$project"/release-notes.md "$mode_flag" $tag --title $tag
+gh release create -F "$TEMPDIR"/"$project"/release-notes.md $mode_flag "$tag" --title "$tag"
 
 # Upload assets
-gh release upload $tag "$assets_dir"/*
+gh release upload "$tag" "$assets_dir"/*
