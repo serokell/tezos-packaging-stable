@@ -62,12 +62,13 @@ def required_field_validator(input):
 # To be validated, the input should adhere to the protocol hash format:
 # <base58 encoded string with length 51 starting with P>
 def protocol_hash_validator(input):
-    match = re.match(protocol_hash_regex.decode("utf-8"), input.strip())
+    proto_hash_regex_str = protocol_hash_regex.decode("utf-8")
+    match = re.match(proto_hash_regex_str, input.strip())
     if not bool(match):
         raise ValueError(
             "The input doesn't match the format for the protocol hash: "
-            "P[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}"
-            "\nPlease check the input and try again."
+            + proto_hash_regex_str
+            + "\nPlease check the input and try again."
         )
     return input
 
@@ -143,7 +144,7 @@ def yes_or_no(prompt, default=None):
 # we don't need any data here, just a confirmation Tezos Wallet app is open
 def wait_for_ledger_baking_app():
     output = b""
-    while re.search(b"Found a Tezos Baking", output) is None:
+    while re.search(b"Found a Tezos Wallet", output) is None:
         output = get_proc_output(
             f"sudo -u tezos {suppress_warning_text} tezos-client list connected ledgers"
         ).stdout
@@ -326,7 +327,7 @@ class Setup:
         with open(config_filepath, "r") as f:
             config_contents = f.read()
             self.config["client_data_dir"] = search_baking_service_config(
-                config_contents, 'DATA_DIR="(.*)"', "/var/lib/.tezos-client"
+                config_contents, 'DATA_DIR="(.*)"', "/var/lib/tezos/.tezos-client"
             )
             self.config["node_rpc_addr"] = search_baking_service_config(
                 config_contents, 'NODE_RPC_ENDPOINT="(.*)"', "http://localhost:8732"
