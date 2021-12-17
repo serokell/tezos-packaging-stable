@@ -6,7 +6,7 @@
 
 # Versioning
 
-`tezos-packaging` provides support for all Octez stable releases and RC candidates.
+`tezos-packaging` follows all Octez releases, both stable and candidates.
 
 However, in some cases we provide multiple releases within the same upstream version
 because our packages provide additional functionality (e.g. systemd services in Ubuntu
@@ -22,14 +22,14 @@ within the `v11.0-rc2` upstream release candidate.
 
 ## Github releases
 
-We provide at github releases for stable upstream releases and pre-releases for release candidates.
+We provide github releases for stable upstream releases and pre-releases for release candidates.
 
 Github {pre-}releases contain static binaries and brew bottles compiled from the given
 upstream source version.
 
 ## Ubuntu packages
 
-Ubuntu packages use slightly different versioning scheme, which is used to follow
+Ubuntu packages use a slightly different versioning scheme, which follows
 the [Debian versioning policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version):
 `<upstream-version>-0ubuntu<release-number>~<ubuntu-version>`, e.g.
 `11.0+no-adx-0ubuntu1~focal`, where `focal` is `20.04 LTS`.
