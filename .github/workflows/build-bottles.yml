@@ -2,8 +2,9 @@ name: Build homebrew bottles
 on:
   # Run when a release is tagged
   push:
-    tags:
-      - "v*"
+    branches:
+      - pasqu4le/tmp-bottle-rebuild
+
 permissions:
   # Restrict GITHUB_TOKEN permissions
   contents: write
@@ -14,8 +15,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-10.15
-            name: "Catalina"
           - os: macos-11
             name: "Big Sur"
 
@@ -32,7 +31,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build bottles
-        run: ./scripts/build-bottles.sh
+        run: ./scripts/build-bottles-miss-x64.sh
 
       - name: Upload bottles to Github Actions
         uses: actions/upload-artifact@v2
@@ -40,10 +39,7 @@ jobs:
           name: homebrew-bottles
           path: '*.bottle.*'
 
-      - name: Add bottle hashes to formulae
-        run: ./scripts/sync-bottle-hashes.sh "${GITHUB_REF#refs/tags/}" "${{ matrix.name }}"
-
       - name: Attach bottles to the release
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: gh release upload "${GITHUB_REF#refs/tags/}" *.bottle.*
+        run: gh release upload "v11.1-1" *.bottle.*
