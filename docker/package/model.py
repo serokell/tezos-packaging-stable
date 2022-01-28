@@ -542,15 +542,16 @@ class TezosBakingServicesPackage(AbstractPackage):
                     custom_requires.append(
                         f"tezos-endorser-{proto.lower()}@custom@%i.service"
                     )
-        self.systemd_units.append(
-            self.__gen_baking_systemd_unit(
-                requires,
-                f"Tezos baking instance for custom network",
-                f"/etc/default/tezos-baking-custom@%i",
-                "tezos-baking-custom.conf",
-                "custom",
-            )
+        custom_unit = self.__gen_baking_systemd_unit(
+            custom_requires,
+            f"Tezos baking instance for custom network",
+            f"/etc/default/tezos-baking-custom@%i",
+            "tezos-baking-custom.conf",
+            "custom",
         )
+        )
+        custom_unit.instances = []
+        self.systemd_units.append(custom_unit)
         self.systemd_units.append(
             SystemdUnit(
                 service_file=ServiceFile(
