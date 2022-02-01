@@ -55,6 +55,9 @@ Apart from the `.service` file you'll need the service startup script and defaul
 configuration file, they can be found in the [`scripts`](../docker/package/scripts) and
 [`defaults`](../docker/package/defaults) folders respectively.
 
+## Systemd services on WSL
+
+Unfortunately, `systemd` is not officially supported on WSL. However, there are some unofficial workarounds for it.
 
 ## Multiple similar systemd services
 

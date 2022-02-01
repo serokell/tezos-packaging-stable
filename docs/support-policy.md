@@ -6,7 +6,7 @@
 # Packages support policy
 
 `tezos-packaging` provides packages for Ubuntu, Fedora and macOS for each stable and release-candidate
-version of Octez.
+version of Octez. `Ubuntu` packages can also be used on WSL, but their support is limited. Functionality limitations are described in the corresponding sections.
 
 This document describes which versions of the aforementioned OSes are targeted
 by our packages.
