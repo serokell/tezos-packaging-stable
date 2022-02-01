@@ -15,6 +15,59 @@ steps:
  # To avoid race-conditions for the gpg key between jobs which sometimes leads to weird errors
  - wait
 
+ - label: Install tezos-sapling-params-arm64
+   key: install-tsp-arm64
+   agents:
+     queue: "arm64-darwin"
+   commands:
+   - brew install --formula ./Formula/tezos-sapling-params.rb
+
+ - label: Build tezos-accuser-011-PtHangz2 bottle for Big Sur arm64
+   key: build-bottle-1-arm64
+   agents:
+     queue: "arm64-darwin"
+   commands:
+   - ./scripts/build-one-bottle.sh "tezos-accuser-011-PtHangz2"
+   artifact_paths:
+     - '*.bottle.*'
+
+ - label: Uninstall tezos-sapling-params arm64
+   key: uninstall-tsp-arm64
+   depends_on:
+   - build-bottle-1-arm64
+   agents:
+     queue: "arm64-darwin"
+   commands:
+   - brew uninstall ./Formula/tezos-sapling-params.rb
+
+ # To avoid running two brew process together
+ - wait
+
+ - label: Install tezos-sapling-params-x86_64
+   key: install-tsp-x86_64
+   agents:
+     queue: "x86_64-rosetta-darwin"
+   commands:
+   - brew install --formula ./Formula/tezos-sapling-params.rb
+
+ - label: Build tezos-accuser-011-PtHangz2 bottle for Big Sur x86_64
+   key: build-bottle-1-x86_64
+   agents:
+     queue: "x86_64-rosetta-darwin"
+   commands:
+   - ./scripts/build-one-bottle.sh "tezos-accuser-011-PtHangz2"
+   artifact_paths:
+     - '*.bottle.*'
+
+ - label: Uninstall tezos-sapling-params x86_64
+   key: uninstall-tsp-x86_64
+   depends_on:
+   - build-bottle-1-x86_64
+   agents:
+     queue: "x86_64-rosetta-darwin"
+   commands:
+   - brew uninstall ./Formula/tezos-sapling-params.rb
+
  - label: reuse lint
    command: nix run -f . pkgs.reuse -c reuse lint
  - label: check trailing whitespace
