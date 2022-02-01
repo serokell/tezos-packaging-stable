@@ -247,6 +247,22 @@ In case you want to use a different alias for the baking account:
 2. update the `BAKER_ADDRESS_ALIAS` by editing the
     `/etc/default/tezos-baking-<network>` file.
 
+<a name="wsl"></a>
+## Baking using Ubuntu on WSL
+
+The instructions for Ubuntu are also valid if you are using WSL.
+Make sure that you are using the second version of WSL, and run
+these commands before following the guide for Ubuntu: 
+
+```
+sudo apt-get update && sudo apt-get install -yqq daemonize dbus-user-session fontconfig
+sudo daemonize /usr/bin/unshare --fork --pid --mount-proc /lib/systemd/systemd --system-unit=basic.target
+exec sudo nsenter -t $(pidof systemd) -a su - $LOGNAME
+```
+
+The main limitation of using WSL is that ledger can't be used for baking.
+However, the other ways to import keys are supported.
+
 ## Quick Start
 
 <details>

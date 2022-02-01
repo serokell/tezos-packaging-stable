@@ -31,6 +31,9 @@ tezos-setup-wizard
 Read [the dedicated article](./docs/baking.md) to find out more about the setup,
 the binaries, and the services used.
 
+It's possible to set up node and baking if you are using [Ubuntu on WSL](https://ubuntu.com/wsl).
+The preparation steps and some restrictions are described [there](./docs/baking.md#wsl).
+
 ## Installing Tezos
 
 `tezos-packaging` supports several native distribution methods for convenience:
