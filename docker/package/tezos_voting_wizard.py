@@ -23,7 +23,7 @@ networks = {
 
 ballot_outcomes = {
     "yay": "Vote for accepting the proposal",
-    "no": "Vote for rejecting the proposal",
+    "nay": "Vote for rejecting the proposal",
     "pass": "Submit a vote not influencing the result but contributing to quorum",
 }
 
@@ -150,7 +150,7 @@ def yes_or_no(prompt, default=None):
 
 
 # we don't need any data here, just a confirmation Tezos Wallet app is open
-def wait_for_ledger_baking_app():
+def wait_for_ledger_wallet_app():
     output = b""
     while re.search(b"Found a Tezos Wallet", output) is None:
         output = get_proc_output(
@@ -231,7 +231,7 @@ custom_network_query = Step(
     help="The selected network will be used to vote.\n"
     "For example, to use the tezos-baking-custom@voting service, input 'voting'."
     "You need to already have set up the custom network using systemd services.",
-    # TODO: "\nYou can follow a tutorial here:",
+    # TODO: "\nFor that, you can follow a tutorial here:",
     validator=Validator(required_field_validator),
 )
 
@@ -274,6 +274,7 @@ ballot_outcome_query = Step(
     prompt="Choose the outcome for your ballot.",
     help="'yay' is for supporting the proposal, 'nay' is for rejecting the proposal, "
     "'pass' is used to not influence a vote but still contribute to reaching a quorum.",
+    default=None,
     options=ballot_outcomes,
     validator=Validator(
         [required_field_validator, enum_range_validator(ballot_outcomes)]
@@ -433,6 +434,13 @@ class Setup:
                     )
                 )
                 print("This means you are not present in the voting listings.")
+            elif re.search(b"Not in a proposal period", result.stderr) is not None:
+                print(
+                    color(
+                        "Cannot submit because the voting period is no longer 'proposal'.", color_red
+                    )
+                )
+                print("This means the voting period has already advanced.")
             elif re.search(b"Too many proposals", result.stderr) is not None:
                 print(
                     color(
@@ -470,7 +478,7 @@ class Setup:
             # Unfortunately, despite the error's description text, tezos-client seems to use this error
             # both when the baker has already voted and when the baker was not in the voting listings
             # in the first place, so it's difficult to distinguish between the two cases.
-            if re.search(b"Unauthorized ballot", result.stdout) is not None:
+            if re.search(b"Unauthorized ballot", result.stderr) is not None:
                 print()
                 print(
                     color("Cannot vote because of an unauthorized ballot.", color_red)
@@ -480,13 +488,22 @@ class Setup:
                     "voting listings in the first place.",
                 )
                 print("Please check your baker data and possibly try again.")
+            if re.search(b"Not in Exploration or Promotion period", result.stderr) is not None:
+                print()
+                print(
+                    color("Cannot vote because the voting period is no longer", color_red),
+                    color(f"'{self.config['amendment_phase']}'.", color_red)
+                )
+                print(
+                    "This most likely means the voting period has already advanced to the next one.",
+                )
             # No other "legitimate" voting error ('invalid_proposal', 'unexpected_ballot')
             # should be possible with the wizard, so we just raise an error with the whole output.
             else:
                 print(
                     "Something went wrong when calling tezos-client. Please consult the logs."
                 )
-                raise OSError(result.stdout.decode())
+                raise OSError(result.stderr.decode())
 
     def run_voting(self):
 
@@ -507,7 +524,7 @@ class Setup:
         if self.check_ledger_use():
             print()
             print("Please open the Tezos Wallet app on your ledger.")
-            wait_for_ledger_baking_app()
+            wait_for_ledger_wallet_app()
 
         # process 'tezos-client show voting period'
         self.fill_voting_period_info()
