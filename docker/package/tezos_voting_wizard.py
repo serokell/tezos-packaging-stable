@@ -437,7 +437,8 @@ class Setup:
             elif re.search(b"Not in a proposal period", result.stderr) is not None:
                 print(
                     color(
-                        "Cannot submit because the voting period is no longer 'proposal'.", color_red
+                        "Cannot submit because the voting period is no longer 'proposal'.",
+                        color_red,
                     )
                 )
                 print("This means the voting period has already advanced.")
@@ -488,11 +489,14 @@ class Setup:
                     "voting listings in the first place.",
                 )
                 print("Please check your baker data and possibly try again.")
-            if re.search(b"Not in Exploration or Promotion period", result.stderr) is not None:
+            if (
+                re.search(b"Not in Exploration or Promotion period", result.stderr)
+                is not None
+            ):
                 print()
                 print(
-                    color("Cannot vote because the voting period is no longer", color_red),
-                    color(f"'{self.config['amendment_phase']}'.", color_red)
+                    color("Cannot vote because the voting period is", color_red),
+                    color(f"no longer '{self.config['amendment_phase']}'.", color_red),
                 )
                 print(
                     "This most likely means the voting period has already advanced to the next one.",
