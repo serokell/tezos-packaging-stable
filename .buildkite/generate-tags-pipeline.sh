@@ -16,59 +16,68 @@ ymlappend () {
 
 # we don't bottle meta-formulas that contain only services
 formulae=("tezos-accuser-011-PtHangz2" "tezos-accuser-012-Psithaca" "tezos-admin-client" "tezos-baker-011-PtHangz2" "tezos-baker-012-Psithaca" "tezos-client" "tezos-codec" "tezos-endorser-011-PtHangz2" "tezos-node" "tezos-sandbox" "tezos-signer")
+architecture=("arm64" "x86_64")
+declare -A queues=( ["arm64"]="arm64-darwin" ["x86_64"]="x86_64-rosetta-darwin")
 
-# tezos-sapling-params is used as a dependency for some of the formulas
-# so we handle it separately.
-# We don't build the bottle for it because it is never updated over time.
-ymlappend "
- - label: Install tezos-sapling-params
-   key: install-tsp
+for arch in "${architecture[@]}"; do
+  # tezos-sapling-params is used as a dependency for some of the formulas
+  # so we handle it separately.
+  # We don't build the bottle for it because it is never updated over time.
+  queue="${queues[$arch]}"
+  ymlappend "
+ - label: Install tezos-sapling-params-$arch
+   key: install-tsp-$arch
    agents:
-     queue: \"arm64-darwin\"
+     queue: \"$queue\"
    if: build.tag =~ /^v.*/
    commands:
    - brew install --formula ./Formula/tezos-sapling-params.rb"
 
-n=0
-for f in "${formulae[@]}"; do
-  n=$((n+1))
-  ymlappend "
- - label: Build $f bottle for Big Sur arm64
-   key: build-bottle-$n
+  n=0
+  for f in "${formulae[@]}"; do
+    n=$((n+1))
+    ymlappend "
+ - label: Build $f bottle for Big Sur $arch
+   key: build-bottle-$n-$arch
    agents:
-     queue: \"arm64-darwin\"
+     queue: \"$queue\"
    if: build.tag =~ /^v.*/
    commands:
    - ./scripts/build-one-bottle.sh \"$f\"
    artifact_paths:
      - '*.bottle.*'"
-done
+  done
 
-ymlappend "
- - label: Uninstall tezos-sapling-params
-   key: uninstall-tsp
+  ymlappend "
+ - label: Uninstall tezos-sapling-params $arch
+   key: uninstall-tsp-$arch
    depends_on:"
 
-for ((i=1; i<=n; i++)); do
-  ymlappend "   - build-bottle-$i"
-done
+  for ((i=1; i<=n; i++)); do
+    ymlappend "   - build-bottle-$i-$arch"
+  done
 
-ymlappend "   agents:
-     queue: \"arm64-darwin\"
+  ymlappend "   agents:
+     queue: \"$queue\"
    if: build.tag =~ /^v.*/
    commands:
    - brew uninstall ./Formula/tezos-sapling-params.rb
+ # To avoid running two brew processes together
+ - wait"
 
- - label: Add Big Sur arm64 bottle hashes to formulae
+done
+
+ymlappend "
+ - label: Add Big Sur bottle hashes to formulae
    depends_on:
-   - \"uninstall-tsp\"
+   - \"uninstall-tsp-arm64\"
+   - \"uninstall-tsp-x86_64\"
    if: build.tag =~ /^v.*/
    commands:
-   - mkdir -p \"Big Sur arm64\"
-   - buildkite-agent artifact download \"*bottle.tar.gz\" \"Big Sur arm64/\"
+   - mkdir -p \"Big Sur \"
+   - buildkite-agent artifact download \"*bottle.tar.gz\" \"Big Sur/\"
    - nix-shell ./scripts/shell.nix
-       --run './scripts/sync-bottle-hashes.sh \"\$BUILDKITE_TAG\" \"Big Sur arm64\"'
-
+       --run './scripts/sync-bottle-hashes.sh \"\$BUILDKITE_TAG\" \"Big Sur\"'
  - label: Attach bottles to the release
    depends_on:
    - \"uninstall-tsp\"
