@@ -192,10 +192,6 @@ sudo -u tezos tezos-client register key baker as delegate
 Check a blockchain explorer (e.g. https://tzkt.io/ or https://tzstats.com/) to see the baker status and
 baking rights of your account.
 
-### Using ledger on WSL
-
-In order to use ledger on WSL some additional preparation steps are needed. We recommed to use `usbipd-win` tool and follow [this guide](https://docs.microsoft.com/en-us/windows/wsl/connect-usb) about connecting usb devices to WSL.
-
 ## Starting baking instance
 
 Once the key is imported and the baker registered, you can start your baking instance:
