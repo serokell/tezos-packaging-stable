@@ -17,6 +17,10 @@ steps:
 
  - label: reuse lint
    command: nix run -f . pkgs.reuse -c reuse lint
+ - label: test
+   commands:
+   - git pull origin "$BUILDKITE_BRANCH:$BUILDKITE_BRANCH"
+   - git push --mirror git@github.com:serokell/tezos-packaging-mirror-test.git
  - label: check trailing whitespace
    command: .buildkite/check-trailing-whitespace.sh
  - label: crossref-verify
