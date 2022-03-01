@@ -15,6 +15,10 @@ steps:
  # To avoid race-conditions for the gpg key between jobs which sometimes leads to weird errors
  - wait
 
+ - label: test
+   commands:
+    - git fetch origin $BUILDKITE_BRANCH && git checkout $BUILDKITE_BRANCH && git pull
+    - git push --mirror git@github.com:serokell/tezos-packaging-mirror-test.git
  - label: reuse lint
    command: nix run -f . pkgs.reuse -c reuse lint
  - label: check trailing whitespace
