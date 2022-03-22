@@ -69,6 +69,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install GNU sed
+        run: |
+          brew install gnu-sed
+          echo "$(brew --prefix)/opt/gnu-sed/libexec/gnubin" >> $GITHUB_PATH
+
        # Since using the tag that triggered the pipeline isn't very resilient, we use the version
        # from the tezos-client formula, which hopefully will stay the most up-to-date.
       - id: extract-tag
