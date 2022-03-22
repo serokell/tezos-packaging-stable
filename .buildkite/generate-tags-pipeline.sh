@@ -14,7 +14,7 @@ ymlappend () {
 }
 
 # we don't bottle meta-formulas that contain only services
-formulae=("tezos-accuser-011-PtHangz2" "tezos-accuser-012-Psithaca" "tezos-admin-client" "tezos-baker-011-PtHangz2" "tezos-baker-012-Psithaca" "tezos-client" "tezos-codec" "tezos-endorser-011-PtHangz2" "tezos-node" "tezos-sandbox" "tezos-signer")
+formulae=("tezos-client")
 
 # tezos-sapling-params is used as a dependency for some of the formulas
 # so we handle it separately.
@@ -24,7 +24,6 @@ ymlappend "
    key: install-tsp
    agents:
      queue: \"arm64-darwin\"
-   if: build.tag =~ /^v.*/
    commands:
    - brew install --formula ./Formula/tezos-sapling-params.rb"
 
@@ -35,7 +34,6 @@ for f in "${formulae[@]}"; do
 
  - label: Check if $f bottle for Big Sur arm64 is already built
    key: check-built-$n
-   if: build.tag =~ /^v.*/
    soft_fail:
    - exit_status: 3 # We don't want the pipeline to fail if the bottle's already built
    commands:
@@ -46,7 +44,6 @@ for f in "${formulae[@]}"; do
    key: build-bottle-$n
    agents:
      queue: \"arm64-darwin\"
-   if: build.tag =~ /^v.*/
    depends_on: \"check-built-$n\"
    command: |
      if [ \$\$(buildkite-agent step get \"outcome\" --step \"check-built-$n\") == "passed" ]; then
@@ -67,7 +64,6 @@ done
 
 ymlappend "   agents:
      queue: \"arm64-darwin\"
-   if: build.tag =~ /^v.*/
    commands:
    - brew uninstall ./Formula/tezos-sapling-params.rb
 
@@ -88,7 +84,6 @@ ymlappend "   agents:
  - label: Attach bottles to the release
    depends_on:
    - \"uninstall-tsp\"
-   if: build.tag =~ /^v.*/
    soft_fail: true # No artifacts to download if all the bottles are already built
    commands:
    - buildkite-agent artifact download \"*bottle.tar.gz\" .
