@@ -1,5 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell shell.nix -i bash
+#! /usr/bin/env bash
 
 # SPDX-FileCopyrightText: 2022 Oxhead Alpha
 # SPDX-License-Identifier: LicenseRef-MIT-OA
@@ -12,7 +11,7 @@ fi
 set -euo pipefail
 
 # we don't bottle meta-formulas that contain only services
-formulae=("tezos-accuser-011-PtHangz2" "tezos-accuser-012-Psithaca" "tezos-admin-client" "tezos-baker-011-PtHangz2" "tezos-baker-012-Psithaca" "tezos-client" "tezos-codec" "tezos-endorser-011-PtHangz2" "tezos-node" "tezos-sandbox" "tezos-signer")
+formulae=("tezos-accuser-012-Psithaca" "tezos-accuser-013-PtJakart" "tezos-admin-client" "tezos-baker-012-Psithaca" "tezos-baker-013-PtJakart" "tezos-client" "tezos-codec" "tezos-node" "tezos-sandbox" "tezos-signer")
 
 # tezos-sapling-params is used as a dependency for some of the formulas
 # so we handle it separately.
