@@ -20,7 +20,7 @@ from .systemd import (
 
 class AbstractPackage:
 
-    build_system = "none"
+    buildfile = "Makefile"
 
     @abstractmethod
     def fetch_sources(self, out_dir):
@@ -152,6 +152,13 @@ mkdir -p %{{buildroot}}/%{{_unitdir}}
     return systemd_deps, systemd_install, systemd_files, systemd_macros
 
 
+def mk_buildsystem_flag(buildfile):
+    return {
+        "setup.py": "--buildsystem=pybuild",
+        "Makefile": "",
+    }[buildfile]
+
+
 def gen_systemd_rules_contents(package):
     override_dh_install_init = "override_dh_installinit:\n"
     package_name = package.name.lower()
@@ -173,10 +180,10 @@ export DEB_CFLAGS_APPEND=-fPIC
 # Disable usage of instructions from the ADX extension to avoid incompatibility
 # with old CPUs, see https://gitlab.com/dannywillems/ocaml-bls12-381/-/merge_requests/135/
 export BLST_PORTABLE=yes
-{f"export PYBUILD_NAME={package_name}" if package.build_system == "pybuild" else ""}
+{f"export PYBUILD_NAME={package_name}" if package.buildfile == "setup.py" else ""}
 
 %:
-	dh $@ {"--with systemd" if len(package.systemd_units) > 0 else ""} --buildsystem={package.build_system}
+	dh $@ {"--with systemd" if len(package.systemd_units) > 0 else ""} {mk_buildsystem_flag(package.buildfile)}
 override_dh_systemd_start:
 	dh_systemd_start --no-start
 {override_dh_install_init if len(package.systemd_units) > 1 else ""}"""
@@ -324,7 +331,6 @@ install: {self.name}
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp $(CURDIR)/{self.name} $(DESTDIR)$(BINDIR)
 """
-        out = out + '/Makefile'
         with open(out, "w") as f:
             f.write(makefile_contents)
 
@@ -462,7 +468,6 @@ install: tezos-sapling-params
 	cp $(CURDIR)/sapling-spend.params $(DESTDIR)$(DATADIR)
 	cp $(CURDIR)/sapling-output.params $(DESTDIR)$(DATADIR)
 """
-        out = out + '/Makefile'
         with open(out, "w") as f:
             f.write(file_contents)
 
@@ -487,7 +492,7 @@ class TezosBakingServicesPackage(AbstractPackage):
     # This should be reset to "" whenever the native version is bumped.
     letter_version = ""
 
-    build_system = "pybuild"
+    buildfile = "setup.py"
 
     def __gen_baking_systemd_unit(
         self, requires, description, environment_file, config_file, suffix
@@ -573,7 +578,7 @@ class TezosBakingServicesPackage(AbstractPackage):
 
     def fetch_sources(self, out_dir):
         os.makedirs(out_dir)
-        package_dir = out_dir + '/wizards'
+        package_dir = out_dir + "/tezos-baking"
         os.makedirs(package_dir)
         shutil.copy(f"{os.path.dirname(__file__)}/wizard_structure.py", package_dir)
         shutil.copy(f"{os.path.dirname(__file__)}/tezos_setup_wizard.py", package_dir)
@@ -625,18 +630,23 @@ License: MIT
 BuildArch: x86_64 aarch64
 Source0: {self.name}-{version}.tar.gz
 Source1: https://gitlab.com/tezos/tezos/tree/v{self.meta.version}/
-BuildRequires: {systemd_deps}
+BuildRequires: {systemd_deps}, python3-devel, python3-setuptools
 Requires: {run_deps}
 %description
 {self.desc}
 Maintainer: {self.meta.maintainer}
 %prep
-%setup -q
+%autosetup -n {self.name}-{version}
 %build
+%py3_build
 %install
-mkdir -p %{{buildroot}}/%{{_bindir}}
+%py3_install
 {systemd_install}
 %files
+%{{_bindir}}/tezos-setup-wizard
+%{{_bindir}}/tezos-voting-wizard
+%{{python3_sitelib}}/tezos_baking-*.egg-info/
+%{{python3_sitelib}}/tezos-baking/
 %license LICENSE
 {systemd_files}
 {systemd_macros}
@@ -645,12 +655,13 @@ mkdir -p %{{buildroot}}/%{{_bindir}}
             f.write(file_contents)
 
     def gen_buildfile(self, out):
-        file_contents = """
+        file_contents = f"""
 from setuptools import setup
 
 setup(
     name='tezos-baking',
-    packages=['wizards'],
+    packages=['tezos-baking'],
+    version={self.meta.version.replace("-", "")},
     entry_points=dict(
         console_scripts=[
             'tezos-setup-wizard=wizards.tezos_setup_wizard:main',
@@ -659,7 +670,6 @@ setup(
     )
 )
 """
-        out = out + '/setup.py'
         with open(out, "w") as f:
             f.write(file_contents)
 
