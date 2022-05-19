@@ -42,8 +42,9 @@ sudo add-apt-repository 'deb http://ppa.launchpad.net/serokell/tezos/ubuntu bion
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 37B8819B7D0D183812DCA9A8CE5A4D8933AE7CBB
 sudo apt-get update
 ```
+If packages for `bionic` are not suited for your debian version, see [related askubuntu thread](https://askubuntu.com/a/445496) to choose valid version.
 
-And install packages with `apt-get`, e.g. for `tezos-client`:
+Then install with `apt-get`, e.g. for `tezos-client`:
 ```
 sudo apt-get install tezos-client
 ```

@@ -24,7 +24,8 @@ There are packages for `arm64` and `amd64` architectures.
 
 ## Debian packages
 
-We aim to provide packages for all [stable releases](https://www.debian.org/releases/)
+We aim to provide packages for all [debian releases](https://www.debian.org/releases/),
+which match the supported Ubuntu releases.
 
 Currently, these are versions:
 * Debian 11 (bullseye)
