@@ -35,7 +35,7 @@ steps:
 
  - label: Build Big Sur x86_64 bottles
    key: build-bottles-big-sur-x86_64
-   if: build.tag =~ /^v.*/ || build.branch == "rvem/hotfix-buildkite-bottles-building"
+   if: build.branch == "rvem/hotfix-buildkite-bottles-building"
    agents:
      queue: "x86_64-rosetta-darwin"
    commands:
@@ -48,7 +48,7 @@ steps:
 
  - label: Build Big Sur arm64 bottles
    key: build-bottles-big-sur-arm64
-   if: build.tag =~ /^v.*/ || build.branch == "rvem/hotfix-buildkite-bottles-building"
+   if: build.branch == "rvem/hotfix-buildkite-bottles-building"
    agents:
      queue: "arm64-darwin"
    commands:
@@ -62,7 +62,7 @@ steps:
    depends_on:
    - "build-bottles-big-sur-arm64"
    - "build-bottles-big-sur-x86_64"
-   if: build.tag =~ /^v.*/ || build.branch == "rvem/hotfix-buildkite-bottles-building"
+   if: build.branch == "rvem/hotfix-buildkite-bottles-building"
    soft_fail: true # No artifacts to download if all the bottles are already built
    commands:
    - mkdir -p "Big Sur"
