@@ -15,7 +15,6 @@ mkShell {
     rename
     gnupg
     dput
-    copr-cli
     rpm
     debian-devscripts
     which
