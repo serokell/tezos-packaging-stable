@@ -617,7 +617,10 @@ class Setup:
                 config_contents, 'DATA_DIR="(.*)"', "/var/lib/tezos/.tezos-client"
             )
             self.config["node_rpc_addr"] = search_baking_service_config(
-                config_contents, 'NODE_RPC_ENDPOINT="(.*)"', "http://localhost:8732"
+                # TODO #517 change this as it won't work anymore
+                config_contents,
+                'NODE_RPC_ADDR="(.*)"',
+                "http://localhost:8732",
             )
             self.config["baker_alias"] = search_baking_service_config(
                 config_contents, 'BAKER_ADDRESS_ALIAS="(.*)"', "baker"
