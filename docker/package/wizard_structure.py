@@ -240,7 +240,7 @@ key_import_modes = {
     "secret-key": "Either the unencrypted or password-encrypted secret key for your address",
     "remote": "Remote key governed by a signer running on a different machine",
     "generate-fresh-key": "Generate fresh key that should be filled manually later",
-    "json": "Faucet JSON file from https://teztnets.xyz/",
+    "json": "Faucet JSON file",
 }
 
 networks = {
@@ -694,18 +694,23 @@ class Setup:
                     print(
                         f"Before proceeding with baker registration you'll need to provide this address with some XTZ.\n"
                         f"Note that you need at least 6000 XTZ in order to receive baking and endorsing rights.\n"
-                        f"You can do fill your address using faucet: https://faucet.{network}.teztnets.xyz/."
+                        f"You can do fill your address using faucet: https://faucet.{network}.teztnets.xyz/.\n"
+                        f"Waiting for funds to arrive... (Ctrl + C to choose another option)."
                     )
-                    # dry-run delegate registration until it succeeds
-                    while True:
-                        result = get_proc_output(
-                            f"sudo -u tezos {suppress_warning_text} tezos-client {tezos_client_options} "
-                            f"register key {baker_alias} as delegate --dry-run"
-                        )
-                        if result.returncode == 0:
-                            break
-                        else:
-                            proc_call("sleep 1")
+                    try:
+                        # dry-run delegate registration until it succeeds
+                        while True:
+                            result = get_proc_output(
+                                f"sudo -u tezos {suppress_warning_text} tezos-client {tezos_client_options} "
+                                f"register key {baker_alias} as delegate --dry-run"
+                            )
+                            if result.returncode == 0:
+                                break
+                            else:
+                                proc_call("sleep 1")
+                    except KeyboardInterrupt:
+                        print("Going back to the import mode selection.")
+                        continue
                 elif self.config["key_import_mode"] == "json":
                     self.query_step(json_filepath_query)
                     json_tmp_path = shutil.copy(self.config["json_filepath"], "/tmp/")
