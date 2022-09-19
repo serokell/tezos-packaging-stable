@@ -29,7 +29,7 @@ In order to change the defaults, open `/etc/default/tezos-tx-rollup-node-$proto`
 ```
 DATA_DIR="/var/lib/tezos/.tezos-client"
 NODE_RPC_ENDPOINT="http://localhost:8732"
-ROLLUP_NODE_RPC_ENDPOINT="127.0.0.1:8472"
+ROLLUP_NODE_RPC_ENDPOINT="http://127.0.0.1:8472"
 ROLLUP_MODE="operator"
 ROLLUP_ALIAS="custom-rollup"
 ```
