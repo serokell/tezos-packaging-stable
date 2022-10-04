@@ -310,9 +310,9 @@ suppress_warning_text = "TEZOS_CLIENT_UNSAFE_DISABLE_DISCLAIMER=YES"
 
 def get_data_dir(network):
     node_env = get_systemd_service_env(f"tezos-node-{network}")
-    data_dir = node_env.get("NODE_DATA_DIR")
+    data_dir = node_env.get("TEZOS_NODE_DIR")
     if data_dir is None:
-        print("NODE_DATA_DIR is undefined, defaulting to /var/lib/tezos/node-" + network)
+        print("TEZOS_NODE_DIR is undefined, defaulting to /var/lib/tezos/node-" + network)
         return "/var/lib/tezos/node-" + network
     return data_dir
 
@@ -619,7 +619,7 @@ class Setup:
         baking_env = get_systemd_service_env(f"tezos-baking-{net}")
 
         self.config["client_data_dir"] = baking_env.get(
-            "DATA_DIR",
+            "TEZOS_CLIENT_DIR",
             "/var/lib/tezos/.tezos-client",
         )
         self.config["node_rpc_addr"] = baking_env.get(

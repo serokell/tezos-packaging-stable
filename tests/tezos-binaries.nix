@@ -8,7 +8,7 @@ in import "${nixpkgs}/nixos/tests/make-test-python.nix" ({ ... }:
   nodes.machine = { ... }: {
     virtualisation.memorySize = 2048;
     virtualisation.diskSize = 1024;
-    environment.sessionVariables.XDG_DATA_DIRS =
+    environment.sessionVariables.XDG_TEZOS_CLIENT_DIRS =
       [ "${pkgs.zcash-params}" ];
     security.pki.certificateFiles = [ ./ca.cert ];
   };

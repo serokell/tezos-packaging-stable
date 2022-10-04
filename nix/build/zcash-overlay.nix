@@ -9,7 +9,7 @@ let
     nativeBuildInputs = oa.nativeBuildInputs ++ [ makeWrapper ];
     postFixup = ''
       for bin in $(find $out/bin -not -name '*.sh' -type f -executable); do
-        wrapProgram "$bin" --prefix XDG_DATA_DIRS : ${zcash}
+        wrapProgram "$bin" --prefix XDG_TEZOS_CLIENT_DIRS : ${zcash}
       done
     '';
   };
