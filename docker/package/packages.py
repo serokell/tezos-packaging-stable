@@ -226,9 +226,8 @@ chown -R tezos:tezos /var/lib/tezos/node-{network}
 cat > /usr/bin/octez-node-{network} <<- 'EOM'
 #! /usr/bin/env bash
 
-# Most notably sets the TEZOS_NODE_DIR env variable:
-eval "source $(systemctl show -p EnvironmentFiles tezos-node-{network}.service | cut -d '=' -f2 | cut -d ' ' -f1 | tr '\n' ' ')"
-octez-node "$@"
+# Set the environment, including TEZOS_NODE_DIR and calls the node command:
+eval "source $(systemctl show -p EnvironmentFiles tezos-node-{network}.service | cut -d '=' -f2 | cut -d ' ' -f1 | tr '\n' ' ')" octez-node "$@"
 EOM
 chmod +x /usr/bin/octez-node-{network}
 ln -sf /usr/bin/octez-node-{network} /usr/bin/tezos-node-{network}
