@@ -351,10 +351,12 @@ class Setup(Setup):
         while True:
             try:
                 urllib.request.urlopen(f"http://{rpc_address}/version")
+                rpc_address = f"http://{rpc_address}/"
                 break
             except urllib.error.URLError:
                 try:
                     urllib.request.urlopen(f"https://{rpc_address}/version")
+                    rpc_address = f"https://{rpc_address}/"
                     break
                 except urllib.error.URLError:
                     proc_call("sleep 1")
