@@ -519,7 +519,7 @@ class TezosBakingServicesPackage(AbstractPackage):
     buildfile = "setup.py"
 
     def __gen_baking_systemd_unit(
-        self, requires, description, environment_file, config_file, suffix
+        self, requires, description, environment_files, config_file, suffix
     ):
         return SystemdUnit(
             service_file=ServiceFile(
@@ -532,7 +532,7 @@ class TezosBakingServicesPackage(AbstractPackage):
                     exec_start="/usr/bin/tezos-baking-start",
                     user="tezos",
                     state_directory="tezos",
-                    environment_file=environment_file,
+                    environment_files=environment_files,
                     exec_start_pre=[
                         "+/usr/bin/setfacl -m u:tezos:rwx /run/systemd/ask-password",
                         "/usr/bin/tezos-baking-prestart",
@@ -576,7 +576,7 @@ class TezosBakingServicesPackage(AbstractPackage):
                 self.__gen_baking_systemd_unit(
                     requires,
                     f"Tezos baking instance for {network}",
-                    f"/etc/default/tezos-baking-{network}",
+                    [f"/etc/default/tezos-baking-{network}"],
                     "tezos-baking.conf",
                     network,
                 )
@@ -588,7 +588,7 @@ class TezosBakingServicesPackage(AbstractPackage):
         custom_unit = self.__gen_baking_systemd_unit(
             custom_requires,
             f"Tezos baking instance for custom network",
-            f"/etc/default/tezos-baking-custom@%i",
+            [f"/etc/default/tezos-baking-custom@%i"],
             "tezos-baking-custom.conf",
             "custom",
         )
