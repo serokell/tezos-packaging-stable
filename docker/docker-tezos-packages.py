@@ -154,11 +154,10 @@ def build_packages(pkgs, distros):
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # FIXME mistake here
     call(
         f"""
     {virtualisation_engine} cp
-    {container_id}:/tezos-packaging/docker/{container_output_dir} .
+    {container_id}:/tezos-packaging/docker/{container_output_dir}/. {args.output_dir}
     """
     )
 
