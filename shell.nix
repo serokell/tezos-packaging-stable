@@ -7,7 +7,11 @@ with pkgs; mkShell {
     python3Packages.black
     shellcheck
     jq
+    copr-cli
     gh
+    dput
+    debian-devscripts
+    rpm
     buildkite-agent
   ];
   OCTEZ_VERSION= with pkgs.lib; lists.last (strings.splitString "/" (meta.tezos_ref));
