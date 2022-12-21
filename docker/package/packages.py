@@ -172,8 +172,8 @@ packages = [
 ]
 
 postinst_steps_common = """
-mkdir -p -m755 /var/lib/tezos || true
-useradd --home-dir /var/lib/tezos tezos || true
+[ ! -d "/var/lib/tezos/" ] && mkdir -p -m755 /var/lib/tezos
+! id -u tezos &> /dev/null && useradd --home-dir /var/lib/tezos tezos
 """
 
 
