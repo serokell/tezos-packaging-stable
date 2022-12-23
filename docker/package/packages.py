@@ -172,8 +172,8 @@ packages = [
 ]
 
 postinst_steps_common = """
-[ ! -d "/var/lib/tezos/" ] && mkdir -p -m755 /var/lib/tezos
-! id -u tezos &> /dev/null && useradd --home-dir /var/lib/tezos tezos
+[ ! -d "/var/lib/tezos/" ] && mkdir -p -m755 /var/lib/tezos || true
+! id -u tezos &> /dev/null && useradd --home-dir /var/lib/tezos tezos && usermod -aG plugdev tezos || true
 """
 
 
@@ -304,10 +304,10 @@ daemon_decs = {
     "accuser": "daemon for accusing",
 }
 
-daemon_postinst_common = (
+daemon_postinst_common = ledger_udev_postinst + (
     postinst_steps_common
     + "\nmkdir -p /var/lib/tezos/.tezos-client\nchown -R tezos:tezos /var/lib/tezos/.tezos-client\n"
-) + ledger_udev_postinst
+)
 
 
 for proto in active_protocols:
