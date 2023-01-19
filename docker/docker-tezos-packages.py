@@ -123,7 +123,7 @@ if not octez_version:
 # so we should also keep that way
 # for ubuntu builds, since we lack `pbuilder` for now,
 # packages should be built in respective containers for better reproducibility
-images = ["37"] if target_os == "fedora" else distributions
+images = ["latest"] if target_os == "fedora" else distributions
 
 for dist in images:
     # prebuild docker image before using containers
