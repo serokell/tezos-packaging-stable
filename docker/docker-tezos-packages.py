@@ -103,6 +103,8 @@ octez_version = os.getenv("OCTEZ_VERSION", None)
 if not octez_version:
     raise Exception("Environment variable OCTEZ_VERSION is not set.")
 
+os.environ["DOCKER_BUILDKIT"] = "1"
+
 # copr build infrastructure uses latest stable fedora and `mock` for builds
 # so we should also keep that way
 # for ubuntu builds, since we lack `pbuilder` for now,
