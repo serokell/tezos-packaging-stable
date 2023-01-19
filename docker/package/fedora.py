@@ -22,7 +22,7 @@ def build_fedora_package(
     cwd = os.path.dirname(__file__)
     home = os.environ["HOME"]
 
-    pkg.fetch_sources(dir, binaries_dir)
+    pkg.fetch_sources(dir, binaries_dir, mode="hard")
     pkg.gen_buildfile("/".join([dir, pkg.buildfile]), binaries_dir)
     pkg.gen_license(f"{dir}/LICENSE")
     for systemd_unit in pkg.systemd_units:

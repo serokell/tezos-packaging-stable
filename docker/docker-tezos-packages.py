@@ -115,7 +115,7 @@ for dist in images:
         f"""
     {virtualisation_engine}
     build -t tezos-{target_os}-{dist}
-    -f docker/package/Dockerfile-{target_os} --build-arg dist={dist} .
+    -f docker/package/Dockerfile-{target_os} --build-arg OCTEZ_VERSION={octez_version} --build-arg dist={dist} .
     """
     )
 
@@ -152,6 +152,7 @@ def build_packages(pkgs, image, distros):
 
     os.makedirs(args.output_dir, exist_ok=True)
 
+    print(container_id)
     call(
         f"""
     {virtualisation_engine} cp

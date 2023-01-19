@@ -26,7 +26,7 @@ def build_ubuntu_package(
         cwd = os.path.dirname(__file__)
         date = subprocess.check_output(["date", "-R"]).decode().strip()
         if source_archive_path is None:
-            pkg.fetch_sources(dir, binaries_dir)
+            pkg.fetch_sources(dir, binaries_dir, mode="soft")
             pkg.gen_buildfile(
                 "/".join([dir, pkg.buildfile]), ubuntu_version, binaries_dir
             )
