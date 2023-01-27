@@ -6,7 +6,8 @@ FROM alpine:3.12 as binary-fetch
 # See https://bugs.launchpad.net/qemu/+bug/1892684.
 RUN wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static
 RUN chmod +x qemu-aarch64-static
-FROM arm64v8/alpine:3.12
+
+FROM arm64v8/alpine:3.12 as builder
 COPY --from=binary-fetch qemu-aarch64-static /usr/bin/qemu-aarch64-static
 RUN apk update
 RUN apk --no-cache --virtual add rsync git m4 build-base patch unzip \
@@ -25,3 +26,11 @@ COPY ./build/build-deps.sh /build-deps.sh
 RUN /build-deps.sh
 COPY ./build/build-tezos.sh /build-tezos.sh
 RUN /build-tezos.sh
+RUN find . \! -name "octez-*" -mindepth 2 -maxdepth 2 | xargs rm -rf
+
+# arm alpine lacks of upx package
+FROM alpine:3.12 as packer
+COPY --from=builder /tezos /tezos
+RUN apk update
+RUN apk --no-cache --virtual add upx
+RUN upx /tezos/octez-*
