@@ -55,7 +55,6 @@ steps:
    - eval "$SET_VERSION"
    - cd docker
    - ./docker-static-build.sh
-   - nix shell .#upx -c upx octez-*
    artifact_paths:
      - ./docker/octez-*
    agents:
