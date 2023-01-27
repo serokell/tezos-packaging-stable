@@ -52,10 +52,10 @@ octez_version = os.getenv("OCTEZ_VERSION", None)
 
 if re.search("v.*-rc[0-9]*", octez_version):
     launchpad_ppa = "tezos-rc-serokell"
-    copr_project = "@Serokell/Tezos-rc"
+    copr_project = "@Serokell/Tezos-test"
 else:
     launchpad_ppa = "tezos-serokell"
-    copr_project = "@Serokell/Tezos"
+    copr_project = "@Serokell/Tezos-test"
 
 for f in filter(lambda x: x.endswith(".changes"), os.listdir(source_packages_path)):
     subprocess.call(

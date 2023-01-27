@@ -162,6 +162,28 @@ steps:
    - gen_systemd_service_file.py
    - docker/package/.*
 
+ - label: Build source packages from static binaries
+   key: build-source-packages-from-static-binaries
+   agents:
+    queue: "docker"
+   depends_on:
+    - "build-via-docker"
+   commands:
+   - eval "$SET_VERSION"
+   - buildkite-agent artifact download "docker/octez-*" . --step build-via-docker
+   - nix develop .#docker-tezos-packages -c ./docker/docker-tezos-packages.py --os fedora --type source --binaries-dir . --output-dir epel-srcs
+   artifact_paths:
+     - ./epel-srcs/*
+
+ - label: Publish epel packages
+   depends_on:
+   - "build-source-packages-from-static-binaries"
+   commands:
+   - eval "$SET_VERSION"
+   - mkdir -p epel-srcs
+   - buildkite-agent artifact download "epel-srcs/*" epel-srcs --step build-source-packages-from-static-binaries
+   - nix develop .#autorelease -c ./scripts/publish-native-packages.py epel-srcs epel-7-x86_64
+
  # TODO #593 re-enable the commented-out arm parts
  - label: create auto release/pre-release
    key: auto-release
