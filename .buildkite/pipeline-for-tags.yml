@@ -32,7 +32,7 @@ steps:
    commands:
    - eval "$SET_VERSION"
    - buildkite-agent artifact download "out/*" . --step build-source-packages
-   - nix develop .#autorelease -c ./scripts/publish-native-packages.sh out
+   - nix develop .#autorelease -c ./scripts/publish-native-packages.py out
 
  - label: build-via-docker
    if: build.tag =~ /^v.*-1/
