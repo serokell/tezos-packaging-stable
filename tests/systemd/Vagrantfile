@@ -33,4 +33,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", run: "always", inline: <<-SHELL
     pytest-3 services_tests.py
   SHELL
+  config.vm.provider "qemu" do |qe|
+    qe.qemu_dir = "/tmp/qemu"
+  end
 end

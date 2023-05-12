@@ -117,16 +117,16 @@ def test_node_mainnet_service():
     node_service_test("mainnet")
 
 
-def test_node_limanet_service():
-    node_service_test("limanet")
+def test_node_mumbainet_service():
+    node_service_test("mumbainet")
 
 
-def test_baking_limanet_service():
-    baking_service_test("limanet", ["PtLimaPt"])
+def test_baking_mumbainet_service():
+    baking_service_test("mumbainet", ["PtMumbai"])
 
 
 def test_baking_mainnet_service():
-    baking_service_test("mainnet", ["PtLimaPt"])
+    baking_service_test("mainnet", ["PtMumbai"])
 
 
 def test_http_signer_service():
@@ -138,9 +138,9 @@ def test_tcp_signer_service():
 
 
 def test_standalone_accuser_service():
-    with unit(f"tezos-node-limanet.service") as _:
-        with unit(f"tezos-accuser-ptlimapt.service") as _:
-            assert check_running_process(f"octez-accuser-PtLimaPt")
+    with unit(f"tezos-node-mumbainet.service") as _:
+        with unit(f"tezos-accuser-ptmumbai.service") as _:
+            assert check_running_process(f"octez-accuser-PtMumbai")
 
 
 def test_unix_signer_service():
@@ -150,33 +150,33 @@ def test_unix_signer_service():
 
 def test_standalone_baker_service():
     replace_systemd_service_env(
-        "tezos-baker-ptlimapt",
+        "tezos-baker-ptmumbai",
         "NODE_DATA_DIR",
-        "/var/lib/tezos/node-limanet",
+        "/var/lib/tezos/node-mumbainet",
     )
     with account("baker") as _:
-        with unit(f"tezos-node-limanet.service") as _:
-            with unit(f"tezos-baker-ptlimapt.service") as _:
-                assert check_running_process(f"octez-baker-PtLimaPt")
+        with unit(f"tezos-node-mumbainet.service") as _:
+            with unit(f"tezos-baker-ptmumbai.service") as _:
+                assert check_running_process(f"octez-baker-PtMumbai")
 
 
 def test_nondefault_node_rpc_endpoint():
     rpc_addr = "127.0.0.1:8735"
-    replace_systemd_service_env("tezos-node-limanet", "NODE_RPC_ADDR", rpc_addr)
-    proc_call("cat /etc/default/tezos-node-limanet")
+    replace_systemd_service_env("tezos-node-mumbainet", "NODE_RPC_ADDR", rpc_addr)
+    proc_call("cat /etc/default/tezos-node-mumbainet")
     try:
-        node_service_test("limanet", f"http://{rpc_addr}")
+        node_service_test("mumbainet", f"http://{rpc_addr}")
     finally:
         replace_systemd_service_env(
-            "tezos-node-limanet", "NODE_RPC_ADDR", "127.0.0.1:8732"
+            "tezos-node-mumbainet", "NODE_RPC_ADDR", "127.0.0.1:8732"
         )
 
 
 def test_nondefault_baking_config():
     replace_systemd_service_env(
-        "tezos-baking-limanet", "BAKER_ADDRESS_ALIAS", "another_baker"
+        "tezos-baking-mumbainet", "BAKER_ADDRESS_ALIAS", "another_baker"
     )
     replace_systemd_service_env(
-        "tezos-baking-limanet", "LIQUIDITY_BAKING_TOGGLE_VOTE", "on"
+        "tezos-baking-mumbainet", "LIQUIDITY_BAKING_TOGGLE_VOTE", "on"
     )
-    baking_service_test("limanet", ["PtLimaPt"], "another_baker")
+    baking_service_test("mumbainet", ["PtMumbai"], "another_baker")
