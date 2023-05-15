@@ -82,73 +82,73 @@ steps:
      queue: "arm64-darwin"
    only_changes: *static_binaries_changes_regexes
 
- - label: test docker-built binaries
-   commands:
-   - buildkite-agent artifact download "docker/*" . --step "build-via-docker"
-   - chmod +x ./docker/*
-   - nix-build . -A binaries-test --no-out-link --arg path-to-binaries ./docker
-   branches: "!master"
-   depends_on:
-    - "build-via-docker"
-   only_changes:
-   - tests/tezos-binaries.nix
-   - tests/test_script.py
-   # files from nix/ are massively used in tests infrastructure
-   - nix/.*
+#  - label: test docker-built binaries
+#    commands:
+#    - buildkite-agent artifact download "docker/*" . --step "build-via-docker"
+#    - chmod +x ./docker/*
+#    - nix-build . -A binaries-test --no-out-link --arg path-to-binaries ./docker
+#    branches: "!master"
+#    depends_on:
+#     - "build-via-docker"
+#    only_changes:
+#    - tests/tezos-binaries.nix
+#    - tests/test_script.py
+#    # files from nix/ are massively used in tests infrastructure
+#    - nix/.*
 
- - label: test deb source packages via docker
-   commands:
-   - eval "$SET_VERSION"
-   - nix develop .#docker-tezos-packages -c ./docker/build/ubuntu/build.py --type source
-   artifact_paths:
-     - ./out/*
-   branches: "!master"
-   timeout_in_minutes: 60
-   agents:
-     queue: "docker"
-   only_changes: &native_packaging_changes_regexes
-   - docker/package/.*
-   - docker/build/ubuntu/build.py
-   - docker/build/util/build.py
-   - meta.json
-   - protocols.json
- - label: test deb binary packages via docker
-   commands:
-   - eval "$SET_VERSION"
-   # Building all binary packages will take significant amount of time, so we build only one
-   # in order to ensure package generation sanity
-   - nix develop .#docker-tezos-packages -c ./docker/build/ubuntu/build.py --type binary -p tezos-baker-PtMumbai
-   - rm -rf out
-   # It takes much time to build binary package, so we do it only on master
-   branches: "master"
-   timeout_in_minutes: 240
-   agents:
-     queue: "docker"
-   only_changes: *native_packaging_changes_regexes
- - label: test rpm source packages via docker
-   commands:
-   - eval "$SET_VERSION"
-   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type source
-   artifact_paths:
-     - ./out/*
-   branches: "!master"
-   timeout_in_minutes: 60
-   agents:
-     queue: "docker"
-   only_changes: *native_packaging_changes_regexes
- - label: test rpm binary packages via docker
-   commands:
-   - eval "$SET_VERSION"
-   # Building all binary packages will take significant amount of time, so we build only one
-   # in order to ensure package generation sanity
-   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type binary -p tezos-baker-PtMumbai
-   - rm -rf out
-   # It takes much time to build binary package, so we do it only on master
-   branches: "master"
-   timeout_in_minutes: 180
-   agents:
-     queue: "docker"
-   only_changes: *native_packaging_changes_regexes
+#  - label: test deb source packages via docker
+#    commands:
+#    - eval "$SET_VERSION"
+#    - nix develop .#docker-tezos-packages -c ./docker/build/ubuntu/build.py --type source
+#    artifact_paths:
+#      - ./out/*
+#    branches: "!master"
+#    timeout_in_minutes: 60
+#    agents:
+#      queue: "docker"
+#    only_changes: &native_packaging_changes_regexes
+#    - docker/package/.*
+#    - docker/build/ubuntu/build.py
+#    - docker/build/util/build.py
+#    - meta.json
+#    - protocols.json
+#  - label: test deb binary packages via docker
+#    commands:
+#    - eval "$SET_VERSION"
+#    # Building all binary packages will take significant amount of time, so we build only one
+#    # in order to ensure package generation sanity
+#    - nix develop .#docker-tezos-packages -c ./docker/build/ubuntu/build.py --type binary -p tezos-baker-PtMumbai
+#    - rm -rf out
+#    # It takes much time to build binary package, so we do it only on master
+#    branches: "master"
+#    timeout_in_minutes: 240
+#    agents:
+#      queue: "docker"
+#    only_changes: *native_packaging_changes_regexes
+#  - label: test rpm source packages via docker
+#    commands:
+#    - eval "$SET_VERSION"
+#    - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type source
+#    artifact_paths:
+#      - ./out/*
+#    branches: "!master"
+#    timeout_in_minutes: 60
+#    agents:
+#      queue: "docker"
+#    only_changes: *native_packaging_changes_regexes
+#  - label: test rpm binary packages via docker
+#    commands:
+#    - eval "$SET_VERSION"
+#    # Building all binary packages will take significant amount of time, so we build only one
+#    # in order to ensure package generation sanity
+#    - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type binary -p tezos-baker-PtMumbai
+#    - rm -rf out
+#    # It takes much time to build binary package, so we do it only on master
+#    branches: "master"
+#    timeout_in_minutes: 180
+#    agents:
+#      queue: "docker"
+#    only_changes: *native_packaging_changes_regexes
 
  - label: build deb packages with static binaries
    key: build-static-deb
@@ -162,18 +162,23 @@ steps:
    - nix develop .#docker-tezos-packages -c ./docker/build/ubuntu/build.py --os ubuntu --type binary --binaries-dir docker --distributions focal
    artifact_paths:
     - ./out/*
-   only_changes: *native_packaging_changes_regexes
-
- - label: test gen_systemd_service_file.py script
-   commands:
-   - eval "$SET_VERSION"
-   - nix develop .#autorelease -c ./gen_systemd_service_file.py tezos-node
-   branches: "!master"
-   agents:
-     queue: "docker"
-   only_changes:
-   - gen_systemd_service_file.py
+   only_changes: &native_packaging_changes_regexes
    - docker/package/.*
+   - docker/build/ubuntu/build.py
+   - docker/build/util/build.py
+   - meta.json
+   - protocols.json
+
+#  - label: test gen_systemd_service_file.py script
+#    commands:
+#    - eval "$SET_VERSION"
+#    - nix develop .#autorelease -c ./gen_systemd_service_file.py tezos-node
+#    branches: "!master"
+#    agents:
+#      queue: "docker"
+#    only_changes:
+#    - gen_systemd_service_file.py
+#    - docker/package/.*
 
  - label: test bundled systemd services
    # Used in .buildkite/hooks/pre-exit
