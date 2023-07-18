@@ -76,8 +76,8 @@ Type in 'exit' to quit.
 
 def fetch_snapshot(url, sha256=None):
 
-    filename = os.path.join(TMP_SNAPSHOT_LOCATION, "octez_node.snapshot")
     dirname = TMP_SNAPSHOT_LOCATION
+    filename = os.path.join(dirname, "octez_node.snapshot")
     metadata_file = os.path.join(dirname, "octez_node.snapshot.sha256")
 
     # creating closures
