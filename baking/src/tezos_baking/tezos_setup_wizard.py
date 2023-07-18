@@ -286,6 +286,20 @@ def get_key_mode_query(modes):
     )
 
 
+ignore_hash_mismatch_options = {
+    "no": "Abort that snapshot and return to the previous step",
+    "yes": "Continue setup with that snapshot",
+}
+
+ignore_hash_mismatch_query = Step(
+    id="ignore_hash_mismatch",
+    prompt="Do you want to proceed with that?",
+    help="It's possible to proceed if actual sha256 is good enough for you.",
+    options=ignore_hash_mismatch_options,
+    validator=Validator(enum_range_validator(ignore_hash_mismatch_options)),
+)
+
+
 class Setup(Setup):
     # Check if there is already some blockchain data in the octez-node data directory,
     # and ask the user if it can be overwritten.
@@ -445,10 +459,8 @@ class Setup(Setup):
                     print(f"Expected sha256: {e.expected_sha256}")
                     print(f"Actual sha256: {e.actual_sha256}")
                     print()
-                    if not yes_or_no(
-                        f"Do you want to proceed with that or abort that option? <y/N> ",
-                        "no",
-                    ):
+                    self.query_step(ignore_hash_mismatch_query)
+                    if self.config["ignore_hash_mismatch"] == "no":
                         continue
             else:
                 url = self.config["snapshot_url"]
