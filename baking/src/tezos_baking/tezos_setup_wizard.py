@@ -80,7 +80,7 @@ def fetch_snapshot(url, sha256=None):
     filename = os.path.join(dirname, "octez_node.snapshot")
     metadata_file = os.path.join(dirname, "octez_node.snapshot.sha256")
 
-    # creating closures
+    # updates or removes the 'metadata_file' containing the snapshot's SHA256
     def dump_metadata(metadata_file=metadata_file, sha256=sha256):
         if sha256:
             with open(metadata_file, "w+") as f:
@@ -88,6 +88,7 @@ def fetch_snapshot(url, sha256=None):
         else:
             proc_call(f"rm -f {metadata_file}")
 
+    # reads `metadata_file` if any or returns None
     def read_metadata(metadata_file=metadata_file):
         if os.path.exists(metadata_file):
             with open(metadata_file, "r") as f:
