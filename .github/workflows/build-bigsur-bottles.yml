@@ -1,0 +1,19 @@
+name: Build BigSur bottles
+on:
+  push:
+    branches:
+      - PruStephan/Remove_unnecessary_tezos_client_deps
+jobs:
+  build-bottles:
+    name: Install and test binaries
+    runs-on: macos-11
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build tezos-client
+        run: |
+          brew install --formula ./Formula/tezos-sapling-params.rb
+          brew install $(brew deps --include-build --formula "./Formula/tezos-client.rb")
+          brew install --formula --build-bottle "./Formula/tezos-client.rb"
