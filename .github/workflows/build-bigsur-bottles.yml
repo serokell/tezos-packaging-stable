@@ -12,8 +12,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build tezos-client
-        run: |
-          brew install --formula ./Formula/tezos-sapling-params.rb
-          brew install $(brew deps --include-build --formula "./Formula/tezos-client.rb")
-          brew install --formula --build-bottle "./Formula/tezos-client.rb"
+      - name: Build bottles and print dependencies
+        run: python3 scripts/print-bottles-deps.py
