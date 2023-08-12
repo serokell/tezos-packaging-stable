@@ -283,6 +283,10 @@ def mk_full_url(host_name, path):
 
 
 def url_is_reachable(url):
+    from urllib.parse import urlparse
+    # urllib doesn't make an assumption which scheme to use by default in case of absence
+    if urlparse(url).scheme == "":
+        url = "https://" + url
     req = urllib.request.Request(url, headers=http_request_headers)
     try:
         urllib.request.urlopen(req)
