@@ -422,6 +422,14 @@ class Setup(Setup):
             self.config["snapshot_url"] = snapshot_metadata["url"]
             self.config["snapshot_sha256"] = snapshot_metadata.get("sha256", None)
             self.config["snapshot_block_hash"] = snapshot_metadata["block_hash"]
+            print(color(f'''
+Snapshot metadata:
+url: {snapshot_metadata["url"]}
+sha256: {snapshot_metadata["sha256"]}
+filesize: {snapshot_metadata["filesize"]}
+block height: {snapshot_metadata["block_height"]}
+block timestamp: {snapshot_metadata["block_timestamp"]}
+''', color_green))
         except (urllib.error.URLError, ValueError):
             print(color(f"Couldn't collect snapshot metadata from {json_url}", color_red))
             print()
