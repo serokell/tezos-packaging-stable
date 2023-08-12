@@ -27,8 +27,7 @@ modes = {
 }
 
 snapshot_import_modes = {
-    "download rolling": "Import rolling snapshot from xtz-shots.io (recommended)",
-    "download full": "Import full snapshot from xtz-shots.io",
+    "provider": "Import snapshot from a provider (recommended)",
     "file": "Import snapshot from a file",
     "url": "Import snapshot from a url",
     "skip": "Skip snapshot import and synchronize with the network from scratch",
@@ -45,10 +44,21 @@ history_modes = {
     "archive": "Store all the chain data, very storage-demanding",
 }
 
+provider_url_modes = {
+    "xtz-shots.io": "The xtz-shots provider",
+    "marigold.dev": "The marigold provider",
+    "url": "Provide a custom url to the provider"
+}
+
 toggle_vote_modes = {
     "pass": "Abstain from voting",
     "off": "Request to end the subsidy",
     "on": "Request to continue or restart the subsidy",
+}
+
+providers = {
+    "xtz-shots.io": "https://xtz-shots.io/tezos-snapshots.json",
+    "marigold.dev": "https://snapshots.tezos.marigold.dev/api",
 }
 
 
@@ -274,6 +284,22 @@ history_mode_query = Step(
     validator=Validator(enum_range_validator(history_modes)),
 )
 
+provider_query = Step(
+    id="provider",
+    prompt="Choose the provider.",
+    help="You have indicated wanting to fetch the snapshot from a provider.\n",
+    options=provider_url_modes,
+    validator=Validator([enum_range_validator(provider_url_modes)]),
+)
+
+provider_url_query = Step(
+    id="provider_url",
+    prompt="Provide the url of the snapshot provider.",
+    help="You have indicated wanting to fetch the snapshot from a custom provider.\n",
+    default=None,
+    validator=Validator([required_field_validator, reachable_url_validator()]),
+)
+
 # We define the step as a function to disallow choosing json baking on mainnet
 def get_key_mode_query(modes):
     return Step(
@@ -370,7 +396,7 @@ class Setup(Setup):
         self.config["snapshot_url"] = None
         self.config["snapshot_block_hash"] = None
 
-        json_url = "https://xtz-shots.io/tezos-snapshots.json"
+        json_url = self.config["provider_url"]
         try:
             snapshot_array = None
             with urllib.request.urlopen(json_url) as url:
@@ -397,7 +423,8 @@ class Setup(Setup):
             self.config["snapshot_sha256"] = snapshot_metadata.get("sha256", None)
             self.config["snapshot_block_hash"] = snapshot_metadata["block_hash"]
         except (urllib.error.URLError, ValueError):
-            print(f"Couldn't collect snapshot metadata from {json_url}")
+            print(color(f"Couldn't collect snapshot metadata from {json_url}", color_red))
+            print()
         except Exception as e:
             print(f"Unexpected error handling snapshot metadata:\n{e}\n")
 
@@ -413,16 +440,6 @@ class Setup(Setup):
                 f"sudo -u tezos octez-node-{self.config['network']} config update "
                 f"--history-mode {self.config['history_mode']}"
             )
-
-            self.get_snapshot_link()
-
-            if self.config["snapshot_url"] is None:
-                snapshot_import_modes.pop("download rolling", None)
-                snapshot_import_modes.pop("download full", None)
-            elif self.config["history_mode"] == "rolling":
-                snapshot_import_modes.pop("download full", None)
-            else:
-                snapshot_import_modes.pop("download rolling", None)
 
         else:
             return
@@ -466,6 +483,17 @@ class Setup(Setup):
                     if self.config["ignore_hash_mismatch"] == "no":
                         continue
             else:
+                self.query_step(provider_query)
+                if self.config["provider"] == "url":
+                    self.query_step(provider_url_query)
+                else:
+                    self.config["provider_url"] = providers[self.config["provider"]]
+
+                self.get_snapshot_link()
+
+                if self.config["snapshot_url"] is None:
+                    continue
+
                 url = self.config["snapshot_url"]
                 sha256 = self.config["snapshot_sha256"]
                 snapshot_block_hash = self.config["snapshot_block_hash"]
