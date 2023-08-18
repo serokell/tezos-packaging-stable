@@ -25,6 +25,7 @@ from tezos_baking.steps import *
 
 parser = argparse.ArgumentParser()
 
+
 # Wizard CLI skeleton
 
 
