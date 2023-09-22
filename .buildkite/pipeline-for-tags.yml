@@ -139,6 +139,7 @@ steps:
      automatic:
        limit: 1
 
+
  - label: Build Big Sur arm64 bottles
    key: build-bottles-big-sur-arm64
    if: build.tag =~ /^v.*/
@@ -153,7 +154,10 @@ steps:
        limit: 1
 
  # We use the tag that triggered the pipeline here. Normally, this isn't very resilient,
- # but in 'scripts/sync-bottle-hashes.sh' it's only used for informational purposes
+ # In 'scripts/sync-bottle-hashes.sh' it's only used for informational purposes,
+ # However, to properly sync hashes with the hashes of the latest release, tag name and
+ # release name should be the same. This is necessary because `gh` tool uses name of the
+ # release for hashes, while we provide it through tag name.
  - label: Add Big Sur bottle hashes to formulae
    depends_on:
    - "build-bottles-big-sur-arm64"
