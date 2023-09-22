@@ -178,8 +178,20 @@ def is_full_snapshot(snapshot_file, import_mode):
     return False
 
 
-def get_node_version_hash():
-    return get_proc_output("octez-node --version").stdout.decode("ascii").split()[0]
+def get_node_version():
+    version = get_proc_output("octez-node --version").stdout.decode("ascii")
+    major_version, minor_version, rc_version = re.search(
+        r"[a-z0-9]+ \(.*\) \(([0-9]+).([0-9]+)(?:~rc([1-9]+))?\)",
+        version,
+    ).groups()
+    return (
+        int(major_version),
+        int(minor_version),
+        (int(rc_version) if rc_version else rc_version),
+    )
+
+
+compatible_snapshot_version = 6
 
 
 # Steps
@@ -405,21 +417,11 @@ class Setup(Setup):
             return False
         return True
 
-    # Check the provider url and collect the most recent snapshot
-    # that is suited for the chosen history mode and network
-    def get_snapshot_metadata(self, name, json_url):
-        def hashes_comply(s1, s2):
-            return s1.startswith(s2) or s2.startswith(s1)
+    def extract_snapshot_metadata(self, snapshot_array):
+        from functools import reduce
 
-        try:
-            snapshot_array = None
-            with urllib.request.urlopen(json_url) as url:
-                snapshot_array = json.load(url)["data"]
-            snapshot_array.sort(reverse=True, key=lambda x: x["block_height"])
-
-            node_version_hash = get_node_version_hash()
-
-            snapshot_metadata = next(
+        def find_snapshot(pred):
+            return next(
                 filter(
                     lambda artifact: artifact["artifact_type"] == "tezos-snapshot"
                     and artifact["chain_name"] == self.config["network"]
@@ -430,16 +432,131 @@ class Setup(Setup):
                             and artifact["history_mode"] == "full"
                         )
                     )
-                    and hashes_comply(
-                        artifact["tezos_version"]["commit_info"]["commit_hash"],
-                        node_version_hash,
-                    ),
+                    and pred(artifact),
                     iter(snapshot_array),
                 ),
-                {"url": None, "block_hash": None},
+                None,
             )
 
-            self.config["snapshots"][name] = snapshot_metadata
+        def get_artifact_version(artifact):
+            version = artifact["tezos_version"]["version"]
+            # there seem to be some inconsistency with that field in different providers
+            # so the only thing we check is if it's a string
+            additional_info = version["additional_info"]
+            return (
+                version["major"],
+                version["minor"],
+                None if type(additional_info) == str else additional_info["rc"],
+            )
+
+        def compose_pred(*preds):
+            return reduce(
+                lambda acc, x: lambda artifact: acc(artifact) and x(artifact), preds
+            )
+
+        def sum_pred(*preds):
+            return reduce(
+                lambda acc, x: lambda artifact: acc(artifact) or x(artifact), preds
+            )
+
+        node_version = get_node_version()
+        major_version, minor_version, rc_version = node_version
+
+        exact_version_pred = lambda artifact: node_version == get_artifact_version(
+            artifact
+        )
+
+        exact_major_version_pred = (
+            lambda artifact: major_version == get_artifact_version(artifact)[0]
+        )
+
+        exact_minor_version_pred = (
+            lambda artifact: minor_version == get_artifact_version(artifact)[1]
+        )
+
+        exact_rc_version_pred = (
+            lambda artifact: rc_version == get_artifact_version(artifact)[2]
+        )
+
+        less_minor_version_pred = (
+            lambda artifact: minor_version > get_artifact_version(artifact)[1]
+        )
+
+        compatible_version_pred = (
+            # it could happen that `snapshot_version` field is not supplied by provider
+            # e.g. marigold snapshots don't supply it
+            lambda artifact: artifact.get("snapshot_version", False)
+            and compatible_snapshot_version == artifact["snapshot_version"]
+        )
+
+        every_pred = lambda artifact: True
+
+        def less_rc_version_pred(artifact):
+            if rc_version == get_artifact_version(artifact)[2]:
+                return False
+            # release is considered bigger than any release candidate
+            elif rc_version is None:
+                return True
+            elif get_artifact_version(artifact)[2] is None:
+                return False
+            else:
+                return rc_version > get_artifact_version(artifact)[2]
+
+        preds = list(
+            map(
+                lambda pred: compose_pred(pred, compatible_version_pred),
+                [
+                    exact_version_pred,
+                    sum_pred(
+                        compose_pred(
+                            exact_major_version_pred,
+                            less_minor_version_pred,
+                            exact_rc_version_pred,
+                        ),
+                        compose_pred(
+                            exact_major_version_pred,
+                            exact_minor_version_pred,
+                            less_rc_version_pred,
+                        ),
+                    ),
+                ],
+            )
+        ) + [compatible_version_pred, every_pred]
+
+        return next(
+            (
+                snapshot
+                for snapshot in map(
+                    lambda pred: find_snapshot(pred),
+                    preds,
+                )
+                if snapshot is not None
+            ),
+            None,
+        )
+
+    # Check the provider url and collect the most recent snapshot
+    # that is suited for the chosen history mode and network
+    def get_snapshot_metadata(self, name, json_url):
+
+        try:
+            snapshot_array = None
+            with urllib.request.urlopen(json_url) as url:
+                snapshot_array = json.load(url)["data"]
+            snapshot_array.sort(reverse=True, key=lambda x: x["block_height"])
+
+            snapshot_metadata = self.extract_snapshot_metadata(snapshot_array)
+
+            if snapshot_metadata is None:
+                print(
+                    color(
+                        f"Suitable snapshot is not found in {name} provider.",
+                        color_red,
+                    )
+                )
+            else:
+                self.config["snapshots"][name] = snapshot_metadata
+
         except urllib.error.URLError:
             print(
                 color(
