@@ -417,7 +417,14 @@ class Setup(Setup):
             return False
         return True
 
-    def extract_snapshot_metadata(self, snapshot_array):
+    # Returns relevant snapshot's metadata
+    # It filters out provided snapshots by `network` and `history_mode`
+    # provided by the user and then follows this steps:
+    # * tries to find the snapshot of exact same Octez version, that is used by the user.
+    # * if there is none, try to find the snapshot with the same major version, but less minor version
+    #   and with the `snapshot_version` compatible with the user's Octez version.
+    # * If there is none, try to find the snapshot with any Octez version, but compatible `snapshot_version`.
+    def extract_relevant_snapshot(self, snapshot_array):
         from functools import reduce
 
         def find_snapshot(pred):
@@ -432,13 +439,18 @@ class Setup(Setup):
                             and artifact["history_mode"] == "full"
                         )
                     )
-                    and pred(artifact),
+                    and pred(
+                        *(
+                            get_artifact_node_version(artifact)
+                            + (artifact.get("snapshot_version", None),)
+                        )
+                    ),
                     iter(snapshot_array),
                 ),
                 None,
             )
 
-        def get_artifact_version(artifact):
+        def get_artifact_node_version(artifact):
             version = artifact["tezos_version"]["version"]
             # there seem to be some inconsistency with that field in different providers
             # so the only thing we check is if it's a string
@@ -451,77 +463,91 @@ class Setup(Setup):
 
         def compose_pred(*preds):
             return reduce(
-                lambda acc, x: lambda artifact: acc(artifact) and x(artifact), preds
+                lambda acc, x: lambda major, minor, rc, snapshot_version: acc(
+                    major, minor, rc, snapshot_version
+                )
+                and x(major, minor, rc, snapshot_version),
+                preds,
             )
 
         def sum_pred(*preds):
             return reduce(
-                lambda acc, x: lambda artifact: acc(artifact) or x(artifact), preds
+                lambda acc, x: lambda major, minor, rc, snapshot_version: acc(
+                    major, minor, rc, snapshot_version
+                )
+                or x(major, minor, rc, snapshot_version),
+                preds,
             )
 
         node_version = get_node_version()
         major_version, minor_version, rc_version = node_version
 
-        exact_version_pred = lambda artifact: node_version == get_artifact_version(
-            artifact
+        exact_version_pred = (
+            lambda major, minor, rc, snapshot_version: node_version
+            == (
+                major,
+                minor,
+                rc,
+            )
         )
 
         exact_major_version_pred = (
-            lambda artifact: major_version == get_artifact_version(artifact)[0]
+            lambda major, minor, rc, snapshot_version: major_version == major
         )
 
         exact_minor_version_pred = (
-            lambda artifact: minor_version == get_artifact_version(artifact)[1]
-        )
-
-        exact_rc_version_pred = (
-            lambda artifact: rc_version == get_artifact_version(artifact)[2]
+            lambda major, minor, rc, snapshot_version: minor_version == minor
         )
 
         less_minor_version_pred = (
-            lambda artifact: minor_version > get_artifact_version(artifact)[1]
+            lambda major, minor, rc, snapshot_version: minor_version > minor
+        )
+
+        exact_rc_version_pred = (
+            lambda major, minor, rc, snapshot_version: rc_version == rc
+        )
+
+        less_rc_version_pred = (
+            lambda major, minor, rc, snapshot_version: rc and rc_version > rc
         )
 
         compatible_version_pred = (
             # it could happen that `snapshot_version` field is not supplied by provider
             # e.g. marigold snapshots don't supply it
-            lambda artifact: artifact.get("snapshot_version", False)
-            and compatible_snapshot_version == artifact["snapshot_version"]
+            lambda major, minor, rc, snapshot_version: snapshot_version
+            and compatible_snapshot_version == snapshot_version
         )
 
-        every_pred = lambda artifact: True
+        no_rc_on_stable_pred = lambda major, minor, rc, snapshot_version: not (
+            rc and rc_version is None
+        )
 
-        def less_rc_version_pred(artifact):
-            if rc_version == get_artifact_version(artifact)[2]:
-                return False
-            # release is considered bigger than any release candidate
-            elif rc_version is None:
-                return True
-            elif get_artifact_version(artifact)[2] is None:
-                return False
-            else:
-                return rc_version > get_artifact_version(artifact)[2]
+        every_pred = lambda major, minor, rc, snapshot_version: True
 
-        preds = list(
-            map(
-                lambda pred: compose_pred(pred, compatible_version_pred),
-                [
-                    exact_version_pred,
-                    sum_pred(
-                        compose_pred(
-                            exact_major_version_pred,
-                            less_minor_version_pred,
-                            exact_rc_version_pred,
-                        ),
-                        compose_pred(
-                            exact_major_version_pred,
-                            exact_minor_version_pred,
-                            less_rc_version_pred,
-                        ),
+        preds = [
+            exact_version_pred,
+            compose_pred(
+                no_rc_on_stable_pred,
+                compatible_version_pred,
+                sum_pred(
+                    compose_pred(
+                        exact_major_version_pred,
+                        less_minor_version_pred,
+                        exact_rc_version_pred,
                     ),
-                ],
-            )
-        ) + [compatible_version_pred, every_pred]
+                    compose_pred(
+                        exact_major_version_pred,
+                        exact_minor_version_pred,
+                        less_rc_version_pred,
+                    ),
+                ),
+            ),
+            compose_pred(
+                no_rc_on_stable_pred,
+                compatible_version_pred,
+            ),
+            every_pred,
+        ]
 
         return next(
             (
@@ -545,7 +571,7 @@ class Setup(Setup):
                 snapshot_array = json.load(url)["data"]
             snapshot_array.sort(reverse=True, key=lambda x: x["block_height"])
 
-            snapshot_metadata = self.extract_snapshot_metadata(snapshot_array)
+            snapshot_metadata = self.extract_relevant_snapshot(snapshot_array)
 
             if snapshot_metadata is None:
                 print(
