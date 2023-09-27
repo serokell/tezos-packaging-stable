@@ -550,7 +550,7 @@ class Setup(Setup):
             if snapshot_metadata is None:
                 print(
                     color(
-                        f"Suitable snapshot is not found in {name} provider.",
+                        f"No suitable snapshot found from the {name} provider.",
                         color_red,
                     )
                 )
