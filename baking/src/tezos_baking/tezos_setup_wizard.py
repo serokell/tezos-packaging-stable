@@ -511,6 +511,8 @@ class Setup(Setup):
             lambda major, minor, rc, snapshot_version: rc and rc_version > rc
         )
 
+        non_rc_version_pred = lambda major, minor, rc, snapshot_version: rc is None
+
         compatible_version_pred = (
             # it could happen that `snapshot_version` field is not supplied by provider
             # e.g. marigold snapshots don't supply it
@@ -518,30 +520,30 @@ class Setup(Setup):
             and compatible_snapshot_version == snapshot_version
         )
 
-        no_rc_on_stable_pred = lambda major, minor, rc, snapshot_version: not (
+        non_rc_on_stable_pred = lambda major, minor, rc, snapshot_version: not (
             rc and rc_version is None
         )
 
         preds = [
             exact_version_pred,
             compose_pred(
-                no_rc_on_stable_pred,
+                non_rc_on_stable_pred,
                 compatible_version_pred,
                 sum_pred(
-                    compose_pred(
-                        exact_major_version_pred,
-                        less_minor_version_pred,
-                        exact_rc_version_pred,
-                    ),
                     compose_pred(
                         exact_major_version_pred,
                         exact_minor_version_pred,
                         less_rc_version_pred,
                     ),
+                    compose_pred(
+                        exact_major_version_pred,
+                        less_minor_version_pred,
+                        non_rc_version_pred,
+                    ),
                 ),
             ),
             compose_pred(
-                no_rc_on_stable_pred,
+                non_rc_on_stable_pred,
                 compatible_version_pred,
             ),
         ]
