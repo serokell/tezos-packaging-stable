@@ -522,8 +522,6 @@ class Setup(Setup):
             rc and rc_version is None
         )
 
-        every_pred = lambda major, minor, rc, snapshot_version: True
-
         preds = [
             exact_version_pred,
             compose_pred(
@@ -546,7 +544,6 @@ class Setup(Setup):
                 no_rc_on_stable_pred,
                 compatible_version_pred,
             ),
-            every_pred,
         ]
 
         return next(
