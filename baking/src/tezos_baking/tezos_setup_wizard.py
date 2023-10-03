@@ -508,7 +508,9 @@ class Setup(Setup):
         )
 
         less_rc_version_pred = (
-            lambda major, minor, rc, snapshot_version: rc and rc_version > rc
+            lambda major, minor, rc, snapshot_version: rc
+            and rc_version
+            and rc_version > rc
         )
 
         non_rc_version_pred = lambda major, minor, rc, snapshot_version: rc is None
@@ -520,9 +522,9 @@ class Setup(Setup):
             and compatible_snapshot_version == snapshot_version
         )
 
-        non_rc_on_stable_pred = lambda major, minor, rc, snapshot_version: not (
-            rc and rc_version is None
-        )
+        non_rc_on_stable_pred = lambda major, minor, rc, snapshot_version: (
+            rc_version is None and rc is None
+        ) or (rc_version is not None)
 
         preds = [
             exact_version_pred,
