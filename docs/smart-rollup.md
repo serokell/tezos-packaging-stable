@@ -3,20 +3,20 @@
    - SPDX-License-Identifier: LicenseRef-MIT-OA
    -->
 
-# Setting up transaction rollup node on Ubuntu
+# Setting up smart rollup node on Ubuntu
 
 At first you should originate rollup with the provided alias for some implicit account:
 ```
-sudo -u tezos tezos-client originate tx rollup <ROLLUP_ALIAS> from <IMPLICIT_ACCOUNT_ALIAS>
+sudo -u tezos tezos-client originate smart rollup <ROLLUP_ALIAS> from <IMPLICIT_ACCOUNT_ALIAS>
 ```
 
 After that, with the active `tezos-node` service available with the provided uri, run the following command
 ```
-systemctl start tezos-tx-rollup-node-<proto>.service
+systemctl start tezos-smart-rollup-node-<proto>.service
 ```
 Note: The `proto` variable can be every active protocol.
 
-For futher details, see [the upstream documentation on transaction rollups](http://tezos.gitlab.io/active/transaction_rollups.html).
+For further details, see [the upstream documentation on smart rollups](http://tezos.gitlab.io/active/smart_rollups.html).
 
 ## Options and defaults
 
