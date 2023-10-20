@@ -85,7 +85,7 @@ steps:
    - cd docker
    - ./docker-static-build.sh
    artifact_paths:
-     - ./docker/octez-*
+     - ./docker/
    agents:
      queue: "docker"
 
@@ -156,6 +156,7 @@ steps:
  # However, this requires that the tag and the release name are the same, which
  # in practice it's always the case in this repo.
  - label: Add Big Sur bottle hashes to formulae
+   key: add-bigsur-hashes
    depends_on:
    - "build-bottles-big-sur-arm64"
    - "build-bottles-big-sur-x86_64"
@@ -164,3 +165,12 @@ steps:
    - mkdir -p "Big Sur"
    - nix develop .#buildkite -c gh release download "$BUILDKITE_TAG" -D "Big Sur/" -p "*big_sur.bottle.tar.gz"
    - nix develop .#autorelease -c ./scripts/sync-bottle-hashes.sh "$BUILDKITE_TAG" "Big Sur"
+
+ - label: Update binaries list
+   depends_on:
+   - "build-via-docker"
+   - "add-bigsur-hashes"
+   if: build.tag =~ /^v.*-1/
+   key: update-binaries
+   commands:
+    - nix develop .#buildkite /tezos-packiging/.buildkite/update-binaries.sh "$BUILDKITE_TAG" "$(buildkite-agent artifact download /docker/binaries.txt)"

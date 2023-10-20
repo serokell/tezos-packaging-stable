@@ -16,6 +16,8 @@ if [ -z ${OCTEZ_EXECUTABLES+x} ]; then
         binaries+=("octez-accuser-$proto" "octez-baker-$proto" "octez-smart-rollup-client-$proto" "octez-smart-rollup-node-$proto")
     done
 
+    printf "%s\n" "${binaries[@]}" > "binaries.txt"
+
     OCTEZ_EXECUTABLES="$( IFS=$' '; echo "${binaries[*]}" )"
 else
     IFS=' ' read -r -a binaries <<< "$OCTEZ_EXECUTABLES"
