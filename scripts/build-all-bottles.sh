@@ -19,7 +19,7 @@ set -euo pipefail
 retval="0"
 
 # we don't bottle meta-formulas that contain only services
-formulae=("tezos-accuser-PtNairob" "tezos-accuser-Proxford" "tezos-admin-client" "tezos-baker-PtNairob" "tezos-baker-Proxford" "tezos-client" "tezos-codec" "tezos-node" "tezos-signer" "tezos-smart-rollup-client-PtNairob" "tezos-smart-rollup-client-Proxford" "tezos-smart-rollup-node-PtNairob" "tezos-smart-rollup-node-Proxford" "tezos-dac-client" "tezos-dac-node" "tezos-smart-rollup-wasm-debugger")
+formulae=("tezos-client")
 
 # tezos-sapling-params is used as a dependency for some of the formulas
 # so we handle it separately.
@@ -27,23 +27,24 @@ formulae=("tezos-accuser-PtNairob" "tezos-accuser-Proxford" "tezos-admin-client"
 brew install --formula ./Formula/tezos-sapling-params.rb
 
 for f in "${formulae[@]}"; do
+  ./scripts/build-one-bottle.sh "$f";
   # check if the formula doesn't already have a bottle in its respective release
-  if ./scripts/check-bottle-built.sh "$f" "$1"; then
-    # build a bottle
-    if ./scripts/build-one-bottle.sh "$f"; then
-      # upload the bottle to its respective release
-      FORMULA_TAG="$(sed -n "s/^\s\+version \"\(.*\)\"/\1/p" "./Formula/$f.rb")"
-      if ! gh release upload "$FORMULA_TAG" "$f"*.bottle.*; then
-        # we want a non-0 exit code if any of the bottles couldn't be uploaded
-        retval="1";
-        >&2 echo "Bottle for $f couldn't be uploaded to $FORMULA_TAG release."
-      fi
-    else
-      # we want a non-0 exit code if any of the bottles couldn't be built
-      retval="1";
-      >&2 echo "Bottle for $f couldn't be built."
-    fi
-  fi
+  # if ./scripts/check-bottle-built.sh "$f" "$1"; then
+  #   # build a bottle
+  #   if ./scripts/build-one-bottle.sh "$f"; then
+  #     # upload the bottle to its respective release
+  #     FORMULA_TAG="$(sed -n "s/^\s\+version \"\(.*\)\"/\1/p" "./Formula/$f.rb")"
+  #     if ! gh release upload "$FORMULA_TAG" "$f"*.bottle.*; then
+  #       # we want a non-0 exit code if any of the bottles couldn't be uploaded
+  #       retval="1";
+  #       >&2 echo "Bottle for $f couldn't be uploaded to $FORMULA_TAG release."
+  #     fi
+  #   else
+  #     # we want a non-0 exit code if any of the bottles couldn't be built
+  #     retval="1";
+  #     >&2 echo "Bottle for $f couldn't be built."
+  #   fi
+  # fi
 done
 
 brew uninstall ./Formula/tezos-sapling-params.rb
