@@ -3,6 +3,9 @@ name: Test Tezos binaries
 on:
   schedule:
     - cron: "0 0 * * *"
+  push:
+    branches:
+      - PruStephan/chore-fix-tests-bug
 
 jobs:
   test_binaries:
