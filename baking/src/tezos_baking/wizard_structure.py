@@ -12,7 +12,6 @@ import os, sys, subprocess, shlex, shutil
 import re, textwrap
 import argparse
 import logging
-from logging.handlers import RotatingFileHandler
 import urllib.request
 import json
 
@@ -92,24 +91,6 @@ def search_json_with_default(json_filepath, field, default):
         except:
             return default
         return json_dict.pop(field, default)
-
-
-def setup_logger(log_file):
-    log_dir = f"{os.getenv('HOME')}/.tezos-logs/"
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, log_file)
-    logging.basicConfig(
-        handlers=[RotatingFileHandler(log_file, maxBytes=4000, backupCount=10)],
-        level=logging.DEBUG,
-        format="%(asctime)s|%(levelname)s|%(message)s",
-        datefmt="%Y-%m-%dT%H:%M:%S",
-        encoding="utf-8",
-    )
-
-
-def print_and_log(s, log=logging.info):
-    print(s)
-    log(s)
 
 
 class Setup:
