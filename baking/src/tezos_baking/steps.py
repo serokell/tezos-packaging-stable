@@ -12,24 +12,38 @@ import sys
 from tezos_baking.util import *
 from tezos_baking.validators import Validator
 import tezos_baking.validators as validators
+from typing import List, Dict, Callable, Optional, Tuple, Union, Any, Mapping
+
+@dataclass
+class Option:
+    item: str
+    description: str
+    requires: "Step"
 
 
+Config = Dict[str, str]
+Answer = str
+
+
+@dataclass
 class Step:
-    def __init__(
-        self,
-        id: str,
-        prompt: str,
-        help: str,
-        default: str = "1",
-        options=None,
-        validator=None,
-    ):
-        self.id = id
-        self.prompt = prompt
-        self.help = help
-        self.default = default
-        self.options = options
-        self.validator = validator
+    id: str
+    help: str
+    prompt: str
+    default: Optional[str] = "1"
+    options: Mapping[str, Union[str, Option]] = field(default_factory=lambda: {})
+    validator: Validator = Validator()
+
+
+    def process(self, answer: str, config: Dict[str, str]):
+        try:
+            answer = self.validator.validate(answer)
+        except ValueError as e:
+            print(color("Validation error: " + str(e), color_red))
+            raise e
+        else:
+            config[self.id] = answer
+
 
     def pprint_options(self):
         i = 1
@@ -80,8 +94,9 @@ class Step:
             indent_size = index_len + 4 + padding
             str_format = f"{{:{index_len}}}. {{:<{padding}}}  {{}}"
             for o in self.options:
+                prompt = self.options[o] if isinstance(self.options[o], str) else self.options[o].description
                 description = textwrap.indent(
-                    textwrap.fill(self.options[o], 60),
+                    textwrap.fill(prompt, 60),
                     " " * indent_size,
                 ).lstrip()
                 if def_i is not None and i == def_i:

@@ -93,42 +93,63 @@ def search_json_with_default(json_filepath, field, default):
         return json_dict.pop(field, default)
 
 
+def get_tree_path(args, step: Step) -> List[Tuple[str, Step]]:
+    argument: Optional[str] = getattr(args, step.id, None)
+    if argument is None:
+        paths = []
+        for (k, v) in step.options.items():
+            if isinstance(v, str):
+                continue
+            path = get_tree_path(args, v.requires)
+            if path:
+                paths.append((v.item, path))
+        if len(paths) > 1:
+            raise ValueError(f"Conflicting arguments: {', '.join(path[1][-1][1].id for path in paths)}")
+        elif len(paths) == 1:
+            (answer, path) = paths[0]
+            return [(answer, step)] + path
+        else:
+            return []
+    else:
+        return [(argument, step)]
+
+
 class Setup:
-    def __init__(self, config={}):
+    def __init__(self, config={}, args=None):
         self.config = config
+        self.args = args
 
     def query_step(self, step: Step):
-        validated = False
-        logging.info(f"Querying step: {step.id}")
-        while not validated:
-            print(step.prompt)
-            step.pprint_options()
-            answer = input("> ").strip()
-
-            logging.info(f"Supplied answer: {answer}")
-
-            if answer.lower() in ["quit", "exit"]:
-                raise KeyboardInterrupt
-            elif answer.lower() in ["help", "?"]:
-                print(step.help)
-                print()
-            else:
-                if not answer and step.default is not None:
-                    logging.info(f"Used default value: {step.default}")
-                    answer = step.default
-
-                try:
-                    if step.validator is not None:
-                        answer = step.validator.validate(answer)
-                except ValueError as e:
-                    print(color("Validation error: " + str(e), color_red))
-                    logging.error(f"Validation error: {e}")
+        def interactive_query():
+            validated = False
+            while not validated:
+                print(step.prompt)
+                step.pprint_options()
+                answer = input("> ").strip()
+                if answer.lower() in ["quit", "exit"]:
+                    raise KeyboardInterrupt
+                elif answer.lower() in ["help", "?"]:
+                    print(step.help)
+                    print()
                 else:
-                    validated = True
-                    logging.info("Answer is validated.")
-                    self.config[step.id] = answer
+                    if not answer and step.default is not None:
+                        answer = step.default
+                    try:
+                        step.process(answer, self.config)
+                    except ValueError:
+                        continue
+                    else:
+                        validated = True
 
-        logging.info(f"config|{step.id}|{self.config[step.id]}")
+        if self.config.get(step.id, None) is None:
+            step_path = get_tree_path(self.args, step)
+            if step_path:
+                for (answer, step) in step_path:
+                    step.process(answer, self.config)
+            else:
+                interactive_query()
+
+            logging.info(f"config|{step.id}|{self.config[step.id]}")
 
     def systemctl_simple_action(self, action, service):
         proc_call(

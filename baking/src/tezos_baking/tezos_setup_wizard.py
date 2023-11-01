@@ -247,9 +247,9 @@ liquidity_toggle_vote_query = Step(
 def get_snapshot_mode_query(config):
 
     static_import_modes = {
-        "file": "Import snapshot from a file",
-        "direct url": "Import snapshot from a direct url",
-        "provider url": "Import snapshot from a provider",
+        "file": Option("file", "Import snapshot from a file", requires=snapshot_file_query),
+        "direct url": Option("direct url", "Import snapshot from a direct url", requires=snapshot_url_query),
+        "provider url": Option("provider url", "Import snapshot from a provider", requires=provider_url_query),
         "skip": "Skip snapshot import and synchronize with the network from scratch",
     }
 
@@ -374,6 +374,20 @@ ignore_hash_mismatch_query = Step(
     options=ignore_hash_mismatch_options,
     validator=Validator(validators.enum_range(ignore_hash_mismatch_options)),
 )
+
+# CLI argument parser
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--network", type=str)
+parser.add_argument("--mode", type=str)
+parser.add_argument("--enable", type=str, dest="systemd_mode")
+parser.add_argument("--liquidity-toggle-vote", type=str)
+parser.add_argument("--snapshot", type=str)
+parser.add_argument("--file", type=str, metavar="SNAPSHOT_FILE", dest="snapshot_file")
+parser.add_argument("--url", type=str, metavar="SNAPSHOT_URL", dest="snapshot_url")
+parser.add_argument("--sha256", type=str, metavar="SNAPSHOT_URL", dest="snapshot_sha256")
+parser.add_argument("--history-mode", type=str)
+parser.add_argument("--key-import-mode", type=str)
 
 
 class Setup(Setup):
@@ -750,6 +764,7 @@ block timestamp: {timestamp} ({time_ago})
 
             self.config["snapshots"] = {}
 
+            if args.getattr("file")
             print_and_log("Getting snapshots' metadata from providers...")
             for name, url in default_providers.items():
                 self.get_snapshot_metadata(name, url)
@@ -1034,7 +1049,8 @@ def main():
 
     try:
         setup_logger("tezos-setup.log")
-        setup = Setup()
+        args = parser.parse_args()
+        setup = Setup(args=args)
         setup.run_setup()
     except KeyboardInterrupt as e:
         if "network" in setup.config:
