@@ -14,6 +14,9 @@ git checkout -B "$1" --track "origin/$1"
 
 python3 /tezos-packiging/docker/package/scripts/update-binaries-list.py $1
 
-git add --all
-git commit --fixup HEAD -m "Updated binaries for $1 release"
-git push auth-origin "$our_branch"
+# git add --all
+# git commit --fixup HEAD -m "Updated binaries for $1 release"
+# git push auth-origin "$our_branch"
+
+diff="$(git diff)"
+echo diff 
