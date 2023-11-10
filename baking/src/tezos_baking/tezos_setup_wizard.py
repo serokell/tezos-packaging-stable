@@ -197,6 +197,14 @@ def get_node_version():
     )
 
 
+def is_protocol_testnet(network):
+    return network == "nairobinet"
+
+
+def teztnets_url(network):
+    return f"https://teztnets.xyz/{network}"
+
+
 compatible_snapshot_version = 6
 
 
@@ -397,14 +405,15 @@ class Setup(Setup):
         if not node_dir_config.issubset(node_dir_contents):
             print_and_log("The Tezos node data directory has not been configured yet.")
             print_and_log("  Configuring directory: " + node_dir)
+            network = self.config["network"]
             proc_call(
-                "sudo -u tezos octez-node-"
-                + self.config["network"]
-                + " config init"
-                + " --network "
-                + self.config["network"]
-                + " --rpc-addr "
-                + self.config["node_rpc_addr"]
+                "sudo -u tezos octez-node-" + network + " config init" + " --network " +
+                # Starting from Nairobi protocol, the corresponding testnet
+                # is no longer a named network, so we need to provide the URL
+                # of the network configuration instead of the network name there.
+                teztnets_url(network)
+                if is_protocol_testnet(network)
+                else network + " --rpc-addr " + self.config["node_rpc_addr"]
             )
 
         diff = node_dir_contents - node_dir_config
