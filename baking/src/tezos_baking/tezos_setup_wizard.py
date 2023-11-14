@@ -727,10 +727,11 @@ block timestamp: {timestamp} ({time_ago})
             fallback_providers.pop(name)
             fallback_provider = self.find_fallback_provider(fallback_providers)
 
-        if fallback_provider is None:
-            return None
+            if fallback_provider is None:
+                return None
+            else:
+                (snapshot, name) = fallback_provider
 
-        (snapshot, name) = fallback_provider
         snapshot_file = self.fetch_snapshot_from_provider(name)
         snapshot_block_hash = self.config["snapshots"][name]["block_hash"]
         return (snapshot_file, snapshot_block_hash)
@@ -830,9 +831,9 @@ block timestamp: {timestamp} ({time_ago})
                 else:
                     for name, url in default_providers.items():
                         if name in self.config["snapshot_mode"]:
-                            selected_provider = name
+                            selected_provider = (name, url)
                     snapshot_info = self.get_snapshot_from_provider_with_fallback(
-                        selected_provider, url
+                        *selected_provider
                     )
                     if snapshot_info is None:
                         message = f"Couldn't find available snapshot in any of the known providers."
@@ -843,9 +844,8 @@ block timestamp: {timestamp} ({time_ago})
                             )
                         )
                         logging.warning(message)
-                        print_and_log("Getting back to the snapshot import mode step.")
-                        continue
-                    (snapshot_file, snapshot_block_hash) = res
+                        raise InterruptStep
+                    (snapshot_file, snapshot_block_hash) = snapshot_info
             except InterruptStep:
                 print_and_log("Getting back to the snapshot import mode step.")
                 continue
