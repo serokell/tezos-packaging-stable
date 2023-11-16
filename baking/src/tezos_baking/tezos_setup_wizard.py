@@ -712,12 +712,11 @@ block timestamp: {timestamp} ({time_ago})
 
     # check if some of the providers has the compatible snapshot
     # available in its metadadata and return the provider name
-    # along with snapshot itself if found
     def find_fallback_provider(self, providers):
         for name, url in providers.items():
             snapshot = self.try_fallback_provider(name, url)
             if snapshot is not None:
-                return (snapshot, name)
+                return name
         return None
 
     # tries to get the latest compatible snapshot from the given
@@ -739,7 +738,7 @@ block timestamp: {timestamp} ({time_ago})
             if fallback_provider is None:
                 return None
             else:
-                (snapshot, name) = fallback_provider
+                name = fallback_provider
 
         snapshot_file = self.fetch_snapshot_from_provider(name)
         snapshot_block_hash = self.config["snapshots"][name]["block_hash"]
@@ -845,14 +844,11 @@ block timestamp: {timestamp} ({time_ago})
                         *selected_provider
                     )
                     if snapshot_info is None:
-                        message = f"Couldn't find available snapshot in any of the known providers."
-                        print(
-                            color(
-                                message,
-                                color_red,
-                            )
+                        print_and_log(
+                            "Couldn't find available snapshot in any of the known providers.",
+                            log=logging.warning,
+                            colorcode=color_yellow,
                         )
-                        logging.warning(message)
                         raise InterruptStep
                     (snapshot_file, snapshot_block_hash) = snapshot_info
             except InterruptStep:
