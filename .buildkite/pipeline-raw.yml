@@ -16,43 +16,29 @@ steps:
  # To avoid race-conditions for the gpg key between jobs which sometimes leads to weird errors
  - wait
 
- - label: build-via-docker
-   key: build-via-docker
+ - label: Build fedora source packages
+   key: build-fedora-source-packages
    commands:
    - eval "$SET_VERSION"
-   - cd docker
-   - ./docker-static-build.sh
+   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type source
    artifact_paths:
-     - ./docker/octez-*
+     - ./out/*
 
- - label: Build source packages from static binaries
-   key: build-source-packages-from-static-binaries
+ - label: Sign fedora source packages
    depends_on:
-   - "build-via-docker"
+   - "build-fedora-source-packages"
+   key: sign-fedora-source-packages
    commands:
    - eval "$SET_VERSION"
-   - mkdir binaries
-   - buildkite-agent artifact download "docker/*" binaries --step build-via-docker
-   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/build.py --type source --output-dir epel --binaries-dir ./binaries/docker
+   - buildkite-agent artifact download "out/*" . --step build-fedora-source-packages
+   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/sign.py -d out -i 'Serokell <tezos-packaging@serokell.io>'
    artifact_paths:
-     - ./epel/*
+     - ./out/*
 
- - label: Sign source packages built from static binaries
-   key: sign-source-packages-built-from-static-binaries
+ - label: Publish fedora native packages
    depends_on:
-   - "build-source-packages-from-static-binaries"
+   - "sign-fedora-source-packages"
    commands:
    - eval "$SET_VERSION"
-   - buildkite-agent artifact download "epel/*" . --step build-source-packages-from-static-binaries
-   - nix develop .#docker-tezos-packages -c ./docker/build/fedora/sign.py -d epel -i 'Serokell <tezos-packaging@serokell.io>'
-   artifact_paths:
-     - ./epel/*
-
- - label: Publish epel packages
-   depends_on:
-   - "sign-source-packages-built-from-static-binaries"
-   commands:
-   - eval "$SET_VERSION"
-   - mkdir -p srcs
-   - buildkite-agent artifact download "epel/*" srcs --step sign-source-packages-built-from-static-binaries
-   - nix develop .#buildkite -c ./docker/build/fedora/upload.py -d srcs/epel --upload epel
+   - buildkite-agent artifact download "out/*" . --step sign-fedora-source-packages
+   - nix develop .#buildkite -c ./docker/build/fedora/upload.py -d out
