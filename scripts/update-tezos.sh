@@ -20,6 +20,7 @@ git checkout "$latest_upstream_tag"
 source scripts/version.sh
 # copying metadata from octez repo
 cp script-inputs/released-executables ../docker/octez-executables
+cp script-inputs/dev-executables ../docker/dev-executables
 cp script-inputs/active_protocol_versions_without_number ../docker/active-protocols
 cd ..
 rm -rf upstream-repo
