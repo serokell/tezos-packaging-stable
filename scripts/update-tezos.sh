@@ -8,8 +8,6 @@
 
 set -e
 
-git config user.name "serokell-bot" # necessary for pushing
-git config user.email "tezos-packaging@serokell.io"
 git fetch --all
 
 # Get latest tag from tezos/tezos
@@ -33,38 +31,38 @@ our_tezos_tag="$(jq -r '.tezos_ref' meta.json | cut -d'/' -f3)"
 new_meta=$(jq ".tezos_ref=\"$latest_upstream_tag\"" meta.json)
 echo "$new_meta" > meta.json
 
-if [[ "$latest_upstream_tag" != "$our_tezos_tag" ]]; then
+if [[ "$latest_upstream_tag" = "$our_tezos_tag" ]]; then
   # If corresponding branch doesn't exist yet, then the release PR
   # wasn't created
-  if ! git rev-parse --verify "$branch_name"; then
-    git switch -c "$branch_name"
+  if true; then
     echo "Updating Tezos to $latest_upstream_tag"
 
     ./scripts/update-input.py tezos "$latest_upstream_tag_hash"
     ./scripts/update-input.py opam-repository "$opam_repository_tag"
-    git commit -a -m "[Chore] Bump Tezos sources to $latest_upstream_tag" --gpg-sign="tezos-packaging@serokell.io"
+    echo "buber" >> ./docker/octez_executables
+    git commit -a -m "[Chore] Bump Tezos sources to $latest_upstream_tag"
 
     ./scripts/update-brew-formulae.sh "$latest_upstream_tag-1"
-    git commit -a -m "[Chore] Update brew formulae for $latest_upstream_tag" --gpg-sign="tezos-packaging@serokell.io"
+    git commit -a -m "[Chore] Update brew formulae for $latest_upstream_tag"
 
     sed -i 's/"release": "[0-9]\+"/"release": "1"/' ./meta.json
     # Update version of tezos-baking package
     sed -i "s/version = .*/version = \"$latest_upstream_tag\"/" ./baking/pyproject.toml
     # Commit may fail when release number wasn't updated since the last release
-    git commit -a -m "[Chore] Reset release number for $latest_upstream_tag" --gpg-sign="tezos-packaging@serokell.io" || \
+    git commit -a -m "[Chore] Reset release number for $latest_upstream_tag" || \
       echo "release number wasn't updated"
 
     sed -i 's/letter_version *= *"[a-z]"/letter_version = ""/' ./docker/package/model.py
     # Commit may fail when the letter version wasn't updated since the last release
-    git commit -a -m "[Chore] Reset letter_version for $latest_upstream_tag" --gpg-sign="tezos-packaging@serokell.io" || \
+    git commit -a -m "[Chore] Reset letter_version for $latest_upstream_tag" || \
       echo "letter_version wasn't reset"
 
     ./scripts/update-release-binaries.py
-    git commit -a -m "[Chore] Update release binaries for $latest_upstream_tag" --gpg-sign="tezos-packaging@serokell.io"
+    git commit -a -m "[Chore] Update release binaries for $latest_upstream_tag"
 
-    git push --set-upstream origin "$branch_name"
+    #git push --set-upstream origin "$branch_name"
 
-    gh pr create -B master -t "[Chore] $latest_upstream_tag release" -F .github/release_pull_request_template.md
+    #gh pr create -B master -t "[Chore] $latest_upstream_tag release" -F .github/release_pull_request_template.md
   fi
 else
   echo "Our version is the same as the latest tag in the upstream repository"
