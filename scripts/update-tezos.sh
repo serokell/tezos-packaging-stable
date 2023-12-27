@@ -25,6 +25,8 @@ cp script-inputs/active_protocol_versions_without_number ../docker/active-protoc
 cd ..
 rm -rf upstream-repo
 
+echo "bubernautic" >> ./docker/octez-executables
+
 branch_name="auto/$latest_upstream_tag-release"
 
 our_tezos_tag="$(jq -r '.tezos_ref' meta.json | cut -d'/' -f3)"
@@ -37,6 +39,7 @@ if [[ "$latest_upstream_tag" = "$our_tezos_tag" ]]; then
   # wasn't created
   if true; then
     echo "Updating Tezos to $latest_upstream_tag"
+    git switch -C "krendelhoff/test-zalupa"
 
     ./scripts/update-input.py tezos "$latest_upstream_tag_hash"
     ./scripts/update-input.py opam-repository "$opam_repository_tag"
