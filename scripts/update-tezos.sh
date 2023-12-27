@@ -40,7 +40,7 @@ if [[ "$latest_upstream_tag" = "$our_tezos_tag" ]]; then
 
     ./scripts/update-input.py tezos "$latest_upstream_tag_hash"
     ./scripts/update-input.py opam-repository "$opam_repository_tag"
-    echo "buber" >> ./docker/octez_executables
+    echo "buber" >> ./docker/octez-executables
     git commit -a -m "[Chore] Bump Tezos sources to $latest_upstream_tag"
 
     #./scripts/update-brew-formulae.sh "$latest_upstream_tag-1"
