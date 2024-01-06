@@ -10,11 +10,10 @@ import subprocess
 from dataclasses import dataclass
 from typing import Optional, List
 
-sys.path.append("docker/build")
-from util.sign import *
+from build.util.sign import *
 
 
-def sign_fedora(args: Arguments):
+def sign_ubuntu(args: Arguments):
 
     artifacts = get_artifact_list(args)
 
@@ -23,21 +22,21 @@ def sign_fedora(args: Arguments):
     gpg = shutil.which("gpg")
 
     for f in artifacts:
-        if f.endswith(".src.rpm"):
+        if f.endswith(".changes"):
             subprocess.check_call(
-                f'rpmsign --define="%_gpg_name {identity}" --define="%__gpg {gpg}" --addsign {f}',
-                shell=True,
+                f"sed -i 's/^Changed-By: .*$/Changed-By: {identity}/' {f}", shell=True
             )
+            subprocess.check_call(f"debsign {f}", shell=True)
 
 
 def main(args: Optional[Arguments] = None):
 
-    parser.set_defaults(os="fedora")
+    parser.set_defaults(os="ubuntu")
 
     if args is None:
         args = fill_args(parser.parse_args())
 
-    sign_fedora(args)
+    sign_ubuntu(args)
 
 
 if __name__ == "__main__":

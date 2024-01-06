@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2024 Oxhead Alpha
+# SPDX-License-Identifier: LicenseRef-MIT-OA
+
+[build-system]
+requires = ["setuptools>=45.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tezos-packaging"
+authors = [
+  { name = "Serokell", email = "tezos-packaging@serokell.io" },
+]
+description = "Project that provides build and packaging scripts for Ubuntu and Fedora Tezos packages"
+license = { text = "LicenseRef-MIT-OA" }
+requires-python = ">=3.9"
+readme = "README.md"
+version = "v19.0-rc1a"
+
+[tool.setuptools.packages.find]
+where= ["src"]
+
+[tool.pyright]
+include = ["src"]
+reportMissingImports = true
+reportOptionalMemberAccess = false
+reportInvalidStringEscapeSequence = false
+reportGeneralTypeIssues = false
+reportMissingTypeStubs = false

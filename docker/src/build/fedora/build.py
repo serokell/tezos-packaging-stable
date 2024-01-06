@@ -11,14 +11,12 @@ from dataclasses import dataclass
 from typing import List
 from pathlib import Path
 
-sys.path.append("docker")
 from package.package_generator import output_dir as container_output_dir
 from package.package_generator import common_parser as parser
 from package.package_generator import make_ubuntu_parser
 from package.packages import packages
 
-sys.path.append("docker/build")
-from util.build import *
+from build.util.build import *
 
 
 def build_fedora(args=None) -> List[str]:

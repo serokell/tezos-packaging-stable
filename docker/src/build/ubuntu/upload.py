@@ -11,8 +11,7 @@ import argparse
 from dataclasses import dataclass
 from typing import List, Optional
 
-sys.path.append("docker/build")
-from util.upload import *
+from build.util.upload import *
 
 
 def upload_ubuntu(args: Arguments):
