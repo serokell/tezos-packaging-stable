@@ -153,7 +153,7 @@ def protocol_hash(input):
 
 
 from dataclasses import dataclass
-from typing import *
+from typing import Callable, Union, List
 
 ValidatorFunction = Callable[[str], str]
 

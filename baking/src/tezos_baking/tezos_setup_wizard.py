@@ -108,13 +108,14 @@ def fetch_snapshot(url, sha256=None):
 
     def download(filename=filename, url=url, args=""):
         from subprocess import CalledProcessError
+        from urllib.error import URLError
 
         try:
             proc_call(f"wget {args} --show-progress -O {filename} {url}")
         except CalledProcessError as e:
             # see here https://www.gnu.org/software/wget/manual/html_node/Exit-Status.html
             if e.returncode >= 4:
-                raise urllib.error.URLError
+                raise URLError("Network failure during the snapshot download.")
             else:
                 raise e
 
@@ -749,11 +750,6 @@ block timestamp: {timestamp} ({time_ago})
             self.query_step(snapshot_sha256_query)
             sha256 = self.config["snapshot_sha256"]
             snapshot_file = fetch_snapshot(url, sha256)
-            if sha256:
-                print_and_log("Checking the snapshot integrity...")
-                check_file_contents_integrity(snapshot_file, sha256)
-                print_and_log("Integrity verified.")
-            return (snapshot_file, None)
         except (ValueError, urllib.error.URLError):
             print()
             logging.error("The snapshot url provided is unavailable.")
@@ -761,16 +757,23 @@ block timestamp: {timestamp} ({time_ago})
             print("Please check the URL again or choose another option.")
             print()
             raise InterruptStep
-        except Sha256Mismatch as e:
-            print_and_log("SHA256 mismatch.", logging.error)
-            print_and_log(f"Expected sha256: {e.expected_sha256}", logging.error)
-            print_and_log(f"Actual sha256: {e.actual_sha256}", logging.error)
-            print()
-            if self.config["ignore_hash_mismatch"] == "no":
-                raise InterruptStep
-            else:
-                logging.info("Ignoring hash mismatch")
-                return (snapshot_file, None)
+
+        if sha256:
+            try:
+                print_and_log("Checking the snapshot integrity...")
+                check_file_contents_integrity(snapshot_file, sha256)
+                print_and_log("Integrity verified.")
+            except Sha256Mismatch as e:
+                print_and_log("SHA256 mismatch.", logging.error)
+                print_and_log(f"Expected sha256: {e.expected_sha256}", logging.error)
+                print_and_log(f"Actual sha256: {e.actual_sha256}", logging.error)
+                print()
+                if self.config["ignore_hash_mismatch"] == "no":
+                    raise InterruptStep
+                else:
+                    logging.info("Ignoring hash mismatch")
+
+        return (snapshot_file, None)
 
     def get_snapshot_from_provider_url(self, url):
         name = "custom"
@@ -837,6 +840,7 @@ block timestamp: {timestamp} ({time_ago})
                         snapshot_block_hash,
                     ) = self.get_snapshot_from_provider_url(url)
                 else:
+                    selected_provider = default_providers.providers.items().next()
                     for name, url in default_providers.items():
                         if name in self.config["snapshot_mode"]:
                             selected_provider = (name, url)
@@ -1104,9 +1108,9 @@ def main():
     readline.parse_and_bind("tab: complete")
     readline.set_completer_delims(" ")
 
+    setup = Setup()
     try:
         setup_logger("tezos-setup.log")
-        setup = Setup()
         setup.run_setup()
     except KeyboardInterrupt as e:
         if "network" in setup.config:
