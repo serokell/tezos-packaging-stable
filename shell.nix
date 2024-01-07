@@ -36,4 +36,7 @@ with pkgs; mkShell {
   ] ++ legacyInputs ++ pythonPkgs;
   OCTEZ_VERSION= with pkgs.lib; lists.last (strings.splitString "/" (meta.tezos_ref));
   DOCKER_BUILDKIT = 1;
+  shellHook = ''
+    export PYTHONPATH=docker/src:$PYTHONPATH
+  '';
 }

@@ -36,12 +36,12 @@ RUN python3 fetch_tezos_sources.py
 WORKDIR /tezos-packaging/docker
 COPY meta.json /tezos-packaging/meta.json
 COPY protocols.json /tezos-packaging/protocols.json
-COPY docker/package/*.py /tezos-packaging/docker/package/
-COPY docker/package/defaults /tezos-packaging/docker/package/defaults
-COPY docker/package/scripts /tezos-packaging/docker/package/scripts
+COPY docker/src/package/*.py /tezos-packaging/docker/src/package/
+COPY docker/src/package/defaults /tezos-packaging/docker/src/package/defaults
+COPY docker/src/package/scripts /tezos-packaging/docker/src/package/scripts
 COPY baking /tezos-packaging/docker/package/baking
 # Uncomment once patches are needed once again
 # COPY docker/package/patches /tezos-packaging/docker/package/patches
 COPY LICENSE /tezos-packaging/LICENSE
 
-ENTRYPOINT ["builder", "-m", "package.package_generator"]
+ENTRYPOINT ["builder", "-m", "src.package.package_generator"]

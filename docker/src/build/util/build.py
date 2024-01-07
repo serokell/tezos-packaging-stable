@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from typing import List
 from pathlib import Path
 
-sys.path.append("docker")
 from package.package_generator import output_dir as container_output_dir
 from package.package_generator import common_parser
 from package.package_generator import make_ubuntu_parser
@@ -88,7 +87,7 @@ def run_build(args: Arguments) -> List[str]:
         f"""
     {virtualisation_engine}
     build -t tezos-{target_os}-{image}
-    -f docker/package/Dockerfile-{target_os} --build-arg OCTEZ_VERSION={octez_version} --build-arg dist={image} .
+    -f docker/src/package/Dockerfile-{target_os} --build-arg OCTEZ_VERSION={octez_version} --build-arg dist={image} .
     """
     )
 
