@@ -318,7 +318,7 @@ packages.append(
 )
 
 protocols_json = json.load(
-    open(f"{os.path.dirname( __file__)}/../../protocols.json", "r")
+    open(f"{os.path.dirname( __file__)}/../../../protocols.json", "r")
 )
 
 active_protocols = protocols_json["active"]

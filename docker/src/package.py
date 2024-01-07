@@ -46,6 +46,7 @@ parser.add_argument(
 
 def build_wrapper(args) -> List[str]:
 
+    artifacts = []
     if args.os == "ubuntu":
         artifacts = build_ubuntu(args)
     elif args.os == "fedora":

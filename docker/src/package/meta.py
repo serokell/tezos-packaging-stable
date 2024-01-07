@@ -20,7 +20,7 @@ class PackagesMeta:
 version = os.environ["OCTEZ_VERSION"][1:]
 
 meta_json_contents = json.load(
-    open(f"{os.path.dirname(__file__)}/../../meta.json", "r")
+    open(f"{os.path.dirname(__file__)}/../../../meta.json", "r")
 )
 packages_meta = PackagesMeta(
     version=version,
