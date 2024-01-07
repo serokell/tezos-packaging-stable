@@ -78,7 +78,6 @@
 
       unstable = import nixpkgs-unstable {
         inherit system;
-        overlays = [(_: _: { nix = nix.packages.${system}.default; })];
       };
 
       callPackage = pkg: input:
@@ -100,7 +99,7 @@
       devShells = {
         buildkite = callPackage ./.buildkite/shell.nix {};
         autorelease = callPackage ./scripts/shell.nix {};
-        docker-tezos-packages = callPackage ./shell.nix {};
+        docker-tezos-packages = callPackage ./shell.nix { pkgs = unstable; legacyPkgs = pkgs; };
       };
 
       checks = {
