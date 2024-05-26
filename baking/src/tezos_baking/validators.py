@@ -60,6 +60,21 @@ def required_field(input):
     return input
 
 
+def number_bigger_than(min):
+    def _validator(input):
+        try:
+            num = float(input) * (10**6)
+        except:
+            raise ValueError("Please input a valid number.")
+        if num < min:
+            raise ValueError(
+                f"Number you entered is lesser than the minimal stake amount."
+            )
+        return input
+
+    return _validator
+
+
 # The input has to be valid to at least one of the two passed validators.
 def any_of(validator1, validator2):
     def _validator(input):
