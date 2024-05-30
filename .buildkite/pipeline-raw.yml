@@ -71,6 +71,7 @@ steps:
    - nix develop .#buildkite -c ./docker/build/fedora/upload.py -d out
 
  - label: build-via-docker
+   # this step is used as a dependency, so we're defining 'key' explicitely
    key: build-via-docker
    commands:
    - eval "$SET_VERSION"
@@ -78,6 +79,12 @@ steps:
    - ./docker-static-build.sh
    artifact_paths:
      - ./docker/octez-*
+   only_changes: &static_binaries_changes_regexes
+   - docker/build/.*.sh
+   - docker/build/Dockerfile
+   - docker/docker-static-build.sh
+   - meta.json
+   - protocols.json
 
  - label: Build source packages from static binaries
    key: build-source-packages-from-static-binaries
