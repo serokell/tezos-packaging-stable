@@ -33,23 +33,9 @@ for asset in "$assets_dir"/*; do
     gpg --armor --detach-sign "$asset"
 done
 
-msg_regex="Merge pull request .* from serokell\/auto\/(v.*)-release"
-rc_regex="^v[0-9]+\.[0-9]+-(rc|beta)[0-9]+"
+mode_flag=""
 
-# We create a pre-release in any case except if we are merging a stable version release PR
-mode_flag="--prerelease"
-
-if [[ ${1-""} =~ $msg_regex ]]; then
-    tag="${BASH_REMATCH[1]}-$(jq -r '.release' meta.json)"
-    if [[ ! $tag =~ $rc_regex ]]; then
-        mode_flag=""
-    fi
-else
-    tag="auto-release"
-
-    # Delete autorelease if it exists
-    gh release delete auto-release --yes || true
-fi
+tag="octez-v20.0-1"
 
 # Update the tag
 git fetch # So that the script can be run from an arbitrary checkout
