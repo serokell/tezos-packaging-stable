@@ -19,7 +19,11 @@ cd tezos
 
 echo "******* Creating switch *******"
 
-. scripts/version.sh
+touch ./scripts/version.sh
+
+ocaml_version=""
+
+. ./scripts/version.sh
 
 opam switch create . --repositories=tezos "ocaml-base-compiler.$ocaml_version" --no-install
 

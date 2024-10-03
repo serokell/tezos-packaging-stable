@@ -42,10 +42,22 @@ opam_repository_tag = (
         shell=True,
     )
     .stdout.decode()
-    .strip()
+    .strip(l)
 )
+
+deps = subprocess.run(
+    [
+        "opam",
+        "list",
+        "--required-by=./tezos/opam/virtual/octez-deps.opam.locked",
+        "--recursive",
+        "--depopts" "--columns=name,version",
+    ],
+    capture_output=True,
+).stdout.decode("utf-8").split("\n")
 
 os.chdir("opam-repository")
 subprocess.run(["git", "checkout", opam_repository_tag])
 subprocess.run(["rm", "-rf", ".git"])
-subprocess.run(["opam", "admin", "cache"])
+for dep in deps:
+    subprocess.run(["opam", "admin", "cache", "add", ".", dep])
