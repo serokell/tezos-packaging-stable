@@ -33,17 +33,3 @@ while : ; do
     git commit -a -m "[Chore] Add $1 hashes to brew formulae for $2"
     ! git push || break
 done
-
-pr_body="Problem: we have built brew bottles for the new Octez release, but their hashes
-aren't in the formulae yet.
-
-Solution: added the hashes.
-"
-
-set +e
-
-# We create the PR with the first push, when the other pipeline hasn't finished yet.
-# That's why we 'set +e': one of the two times the command will fail.
-gh pr create -B master -t "[Chore] Add bottle hashes for $1" -b "$pr_body"
-
-exit 0
