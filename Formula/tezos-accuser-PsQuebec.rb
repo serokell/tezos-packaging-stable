@@ -29,6 +29,7 @@ class TezosAccuserPsquebec < Formula
     sha256 cellar: :any, ventura: "fa776c6a72b8bc93f8408ad3fea8572a08b2395e3e3634e6a5a2fbb9fb08f3b2"
     sha256 cellar: :any, ventura: "fa776c6a72b8bc93f8408ad3fea8572a08b2395e3e3634e6a5a2fbb9fb08f3b2"
     sha256 cellar: :any, ventura: "fa776c6a72b8bc93f8408ad3fea8572a08b2395e3e3634e6a5a2fbb9fb08f3b2"
+    sha256 cellar: :any, ventura: "fa776c6a72b8bc93f8408ad3fea8572a08b2395e3e3634e6a5a2fbb9fb08f3b2"
   end
 
   def make_deps
