@@ -31,6 +31,7 @@ class TezosBakerPsriotum < Formula
     sha256 cellar: :any, ventura: "406da0b66523d4ccf8ab244608c62addd36cff89eb18c58e950c90f27e39cae8"
     sha256 cellar: :any, ventura: "406da0b66523d4ccf8ab244608c62addd36cff89eb18c58e950c90f27e39cae8"
     sha256 cellar: :any, ventura: "406da0b66523d4ccf8ab244608c62addd36cff89eb18c58e950c90f27e39cae8"
+    sha256 cellar: :any, ventura: "406da0b66523d4ccf8ab244608c62addd36cff89eb18c58e950c90f27e39cae8"
   end
 
   def make_deps
