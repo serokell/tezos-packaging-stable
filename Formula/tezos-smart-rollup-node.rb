@@ -36,6 +36,7 @@ class TezosSmartRollupNode < Formula
     sha256 cellar: :any, ventura: "cf5d887225485a9e33850153c02625ec49c22f89ca9c6492b83821294248bedd"
     sha256 cellar: :any, ventura: "cf5d887225485a9e33850153c02625ec49c22f89ca9c6492b83821294248bedd"
     sha256 cellar: :any, ventura: "cf5d887225485a9e33850153c02625ec49c22f89ca9c6492b83821294248bedd"
+    sha256 cellar: :any, ventura: "cf5d887225485a9e33850153c02625ec49c22f89ca9c6492b83821294248bedd"
   end
 
   def make_deps
