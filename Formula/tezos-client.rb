@@ -33,6 +33,7 @@ class TezosClient < Formula
     sha256 cellar: :any, ventura: "bbf3f8776e59d204111dbb5a55b7eec2948682ea8a6f705a0a7625341f227880"
     sha256 cellar: :any, ventura: "bbf3f8776e59d204111dbb5a55b7eec2948682ea8a6f705a0a7625341f227880"
     sha256 cellar: :any, ventura: "bbf3f8776e59d204111dbb5a55b7eec2948682ea8a6f705a0a7625341f227880"
+    sha256 cellar: :any, ventura: "bbf3f8776e59d204111dbb5a55b7eec2948682ea8a6f705a0a7625341f227880"
   end
 
   def make_deps
