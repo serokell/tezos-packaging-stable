@@ -12,38 +12,36 @@ if [ -z "$1" ] || [ -z "$2" ]; then
     exit 1
 fi
 
-git config user.name "serokell-bot" # necessary for pushing
-git config user.email "tezos-packaging@serokell.io"
-git fetch --all
+# git config user.name "serokell-bot" # necessary for pushing
+# git config user.email "tezos-packaging@serokell.io"
+# git fetch --all
 
 branch_name="auto/update-brew-formulae-$1"
 
-# Git doesn't have an easy way to check out a branch regardless of whether it exists.
-if ! git switch "$branch_name"; then
-    git switch -c "$branch_name"
-    git push --set-upstream origin "$branch_name"
-fi
+# # Git doesn't have an easy way to check out a branch regardless of whether it exists.
+# if ! git switch "$branch_name"; then
+#     git switch -c "$branch_name"
+#     git push --set-upstream origin "$branch_name"
+# fi
 
-# Try to add hashes and push changes upstream. If there is a collision precisely at the time of
+# # Try to add hashes and push changes upstream. If there is a collision precisely at the time of
 # pushing, that means the other pipeline has raced this one to push. Reset to origin and try again.
 while : ; do
-    git fetch --all
-    git reset --hard origin/"$branch_name"
     ./scripts/bottle-hashes.sh "./$2" "$1"
     git commit -a -m "[Chore] Add $1 hashes to brew formulae for $2"
     ! git push || break
 done
 
-pr_body="Problem: we have built brew bottles for the new Octez release, but their hashes
-aren't in the formulae yet.
+# pr_body="Problem: we have built brew bottles for the new Octez release, but their hashes
+# aren't in the formulae yet.
 
-Solution: added the hashes.
-"
+# Solution: added the hashes.
+# "
 
-set +e
+# set +e
 
-# We create the PR with the first push, when the other pipeline hasn't finished yet.
-# That's why we 'set +e': one of the two times the command will fail.
-gh pr create -B master -t "[Chore] Add bottle hashes for $1" -b "$pr_body"
+# # We create the PR with the first push, when the other pipeline hasn't finished yet.
+# # That's why we 'set +e': one of the two times the command will fail.
+# gh pr create -B master -t "[Chore] Add bottle hashes for $1" -b "$pr_body"
 
 exit 0
